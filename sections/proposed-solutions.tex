@@ -1,0 +1,488 @@
+\numberedchapter{Proposed Solutions}\label{section:solutions}
+
+Recognizing the necessity for a robust and adaptive approach, we explore the implementation of two distinct deep learning architectures, U-Net and ResNet, which have demonstrated remarkable efficacy in image processing tasks. Subsequent sections provide a comprehensive examination of these architectures, detailing their design, implementation and specific applicability to our task at hand. Finally, a separate section offers a thorough review of the conducted experiments and the ensuing results, thus quantifying the effectiveness of the proposed solutions in addressing the challenge of image inpainting.
+
+\numberedsection{U-Net}
+
+The U-Net model, a distinguished and influential architecture within the domain of deep learning, has garnered considerable recognition for its exceptional performance in the realm of image segmentation tasks. As depicted in \autoref{fig:unet}, the architecture's defining characteristic is its symmetric, expansive pathway, a design that facilitates precise localisation~\supercite{unet}. This attribute is particularly advantageous in tasks that necessitate exact boundary demarcation, such as semantic segmentation. The model's unique design, coupled with its proven effectiveness, positions it as an optimal choice for such complex image-processing tasks. The ensuing discussion will delve into the details of the U-Net model, elucidating its architectural components and operational mechanisms.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{proposed-solutions/unet.pdf}
+    \caption{General overview of the U-Net architecture}
+    \label{fig:unet}
+\end{figure}
+
+The U-Net model is composed of several \textbf{blocks}, each performing a specific function. These blocks can be broadly categorised into the \textbf{encoder} (i.e. \textit{downsampling} or \textit{contraction} path), the \textbf{decoder} (i.e. \textit{upsampling} or \textit{expansion} path) and the \textbf{bottleneck} (i.e. \textit{skip}/\textit{shortcut connections}).
+
+\unnumberedsubsection{Encoder}
+
+The primary function of the encoder (also referred to as the downsampling or contraction path) is to systematically reduce the spatial dimensions of the input image while simultaneously increasing the depth of the feature maps. This process facilitates the extraction of high-level semantic features from the input data. The encoder achieves this by applying a series of transformations that progressively abstract the information, thereby enabling the model to discern complex patterns and relationships within the data.
+
+The encoder constitutes the initial half of the U-Net model, being composed of a series of convolutional blocks, as outlined in \autoref{fig:unet-layers}. Each block within the downsampling path commences with a $\text{\texttt{K}} \stimes \text{\texttt{K}}$ convolution operation, where \texttt{K} denotes the kernel size and \texttt{C} represents the number of channels or filters. This operation serves to extract features from the input image. Following the convolution operation, a $\text{\texttt{2}} \stimes \text{\texttt{2}}$ max pooling operation is executed. This operation effectively reduces the spatial dimensions of the input, thereby downsampling the image. The max pooling operation aids in expanding the field of view of the convolutions and mitigating the computational complexity of the model. Following the max pooling operation, the batch normalisation step follows. This technique standardizes the outputs of the max pooling operation, enhancing the stability and performance of the model. Post batch normalisation, a Leaky ReLU activation function with a negative slope of \texttt{0.2} is performed. This function introduces non-linearity into the model, empowering it to learn more intricate representations. Following the first Leaky ReLU, another $\text{\texttt{K}} \stimes \text{\texttt{K}}$ convolution operation with \texttt{C} channels is performed, succeeded by batch normalisation and another Leaky ReLU activation function. The block concludes with a dropout operation at a rate of \texttt{5\%}.
+
+\unnumberedsubsection{Decoder}
+
+The primary role of the decoder (alternatively known as the upsampling or expansion path) is to restore the spatial dimensions of the abstracted feature representation received from the encoder, effectively reconstructing the image. It accomplishes this by progressively increasing the resolution of the feature maps while simultaneously decreasing their depth. This process enables the model to generate a detailed and high-resolution output from the high-level features extracted by the encoder. In the specific context of image inpainting, the decoder's role is to use these high-level features to accurately fill in the missing or corrupted parts of the image, thereby producing a complete and coherent output
+
+As reflected in \autoref{fig:unet-layers}, the decoder forms the latter half of the U-Net model, being comprised of a series of up-convolutional blocks. Each block within the upsampling path initiates with a batch normalisation operation. This technique normalises the inputs, enhancing the stability and performance of the model. Following batch normalisation, a $\text{\texttt{K}} \stimes \text{\texttt{K}}$ convolution operation with \texttt{C} channels is performed, serving to extract features from the input. Succeeding the convolution operation, another batch normalisation is applied, followed by a Leaky ReLU activation function with a negative slope of \texttt{0.2}. The block then incorporates a dropout operation at a rate of \texttt{5\%}. Following the dropout, a $\text{\texttt{1}} \stimes \text{\texttt{1}}$ convolution operation with \texttt{C} channels is performed, succeeded by batch normalisation and another Leaky ReLU activation function. The block concludes with another dropout operation at a rate of \texttt{5\%}, followed by a $\text{\texttt{2}} \stimes \text{\texttt{2}}$ transposed convolution operation with \texttt{C} channels. This operation effectively increases the spatial dimensions of the input, thereby upsampling the image.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{proposed-solutions/unet-layers.pdf}
+    \caption{Detailed examination of U-Net's incorporating blocks}
+    \label{fig:unet-layers}
+\end{figure}
+
+\unnumberedsubsection{Bottleneck}
+
+Situated between the encoder and decoder in the U-Net model, the bottleneck path, also called skip/shortcut connections, plays a crucial part. Its primary role is to extract the most abstract and high-level features from the input data, acting as a bridge between the encoder and decoder paths. This layer is of foremost importance as it encapsulates the most compressed representation of the input data, which is then expanded by the decoder to generate the final output. These connections, both long and short, are instrumental in addressing the vanishing gradient problem. Long skip connections specifically allow for the transfer of features from the encoder to the decoder, aiding in the recovery of spatial information that may have been lost during the downsampling process. Short skip connections, on the other hand, contribute to the stabilisation of gradient updates.
+
+The bottleneck block is composed of a distinct sequence of operations, setting it apart from the other blocks in the model, as suggested in \autoref{fig:unet-layers}. Each bottleneck block initiates with a $\text{\texttt{1}} \stimes \text{\texttt{1}}$ convolution operation with \texttt{4} filters. This operation is designed to extract high-level features from the input. Following the convolution operation, batch normalisation is applied. Ensuing batch normalisation, a Leaky ReLU activation function with a negative slope of \texttt{0.2} is used. The block then incorporates a dropout operation at a rate of \texttt{5\%}. Contrary to the other blocks, the bottleneck does not include a max pooling or transposed convolution operation. As illustrated in \autoref{fig:unet}, the U-Net model employs a concatenation operation to integrate the high-level feature representations extracted by the bottleneck blocks with the spatially detailed information reconstructed by the upsampling blocks.
+
+\unnumberedsubsection{Ouput}
+
+As indicated in \autoref{fig:unet}, the terminal layer of the UNet model is a $\text{\texttt{1}} \stimes \text{\texttt{1}}$ convolution with \texttt{3} channels. This layer is instrumental in mapping the deep feature representation, established by the network, to the inpainted RGB image. The output of this layer is not a conventional probability map, but rather a reconstructed RGB image where each pixel's value is determined by the network's output.
+
+\numberedsection{ResNet}\label{section:resnet}
+
+The \textbf{Residual Network} (ResNet), a cornerstone in the realm of deep learning architectures, is the focal point of this section, as depicted in \autoref{fig:resnet}. ResNet is predicated on the innovative concept of residual learning. This paradigm-shifting model is characterised by its depth, comprising a multitude of interconnected layers, each integral to the model's ability to interpret and learn intricate patterns embedded within the data. The architecture of ResNet is ingeniously designed to circumvent the vanishing gradients problem, a common pitfall associated with increasing network depth. This is achieved through the introduction of shortcut or skip connections, which facilitate the propagation of gradients throughout the network. These connections, also known as \textbf{residuals}, enable the model to learn an identity function, ensuring the network's performance does not deteriorate with increasing depth. As such, ResNet has emerged as a robust and efficient framework in the field of computer vision, setting a new standard for tasks such as image classification and recognition.
+
+As highlighted in \autoref{fig:resnet}, the architecture commences with a $\text{\texttt{3}} \stimes \text{\texttt{3}}$ convolutional layer with \texttt{32} filters. This layer is responsible for extracting low-level features from the input data. Following this layer, a batch normalisation process is applied, which standardises the inputs to the next layer, improving the stability and speed of learning. Succeeding batch normalisation, a $\text{\texttt{3}} \stimes \text{\texttt{3}}$ max pooling operation is performed. This operation reduces the spatial dimensions of the input, effectively downsampling the image and increasing the field of view of the convolutions, which aids in reducing the computational complexity of the model. Following the max pooling operation, the architecture incorporates a series of residual blocks. After the sequence of residual blocks, a Leaky ReLU activation function with a negative slope of \texttt{0.2} is used, introducing non-linearity into the model. Following the Leaky ReLU, a $\text{\texttt{5}} \stimes \text{\texttt{5}}$ convolution operation with \texttt{64} filters is performed, followed by batch normalisation and another Leaky ReLU activation function. This sequence of operations allows the model to extract even more complex features from the input data. The architecture concludes with a $\text{\texttt{4}} \stimes \text{\texttt{4}}$ transposed convolution operation with \texttt{3} channels. This operation effectively increases the spatial dimensions of the input, thereby upsampling the image and enabling the reconstruction of the original input image from the abstracted feature representation.
+
+Each residual block commences with a Leaky ReLU activation function with a negative slope of \texttt{0.2}. Following this, the architecture incorporates a residual node. This node is composed of a series of operations, starting with a $\text{\texttt{3}} \stimes \text{\texttt{3}}$ convolution operation with \texttt{32} channels. This operation serves to extract features from the input data. The convolution operation is followed by batch normalisation. Subsequent to batch normalisation, a dropout operation at a rate of \texttt{10\%} is performed as a form of regularisation that helps prevent overfitting. After the dropout operation, another Leaky ReLU activation function with a negative slope of \texttt{0.2} is used, followed by another $\text{\texttt{3}} \stimes \text{\texttt{3}}$ convolution operation with \texttt{32} filters and batch normalisation. This sequence of operations allows the model to extract even more complex features from the input data. The output of the Leaky ReLU at the beginning of the block and the output of the residual node are then summed up. This operation allows the gradient to flow directly through the network, mitigating the vanishing gradient problem and enabling the training of extremely deep networks.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{proposed-solutions/resnet.pdf}
+    \caption{In-depth look at the ResNet architecture and its encompassing layers}
+    \label{fig:resnet}
+\end{figure}
+
+\numberedsection{Experiments and Results}
+
+In this segment, detailed discussions on the experiments conducted, the results derived and additional aspects of the implemented solutions are to be presented. The chosen evaluative metrics, namely the Peak Signal-to-Noise Ratio (PSNR), Structural Similarity Index Measure (SSIM) and Learned Perceptual Image Patch Similarity (LPIPS), are to be employed for the quantitative assessment of the solutions' performance.
+
+In the incipient phase of this project, the mask generation algorithm of choice was the random shapes one, as described in \autoref{section:mask}. This initial stage established baseline values for the chosen metrics, applying them to the masked images, as illustrated in \autoref{table:cifar-base}.
+\begin{table}[ht]
+    \centering
+    \resizebox{!}{1.55cm}{
+        \begin{tabular}{cccc}
+            \toprule
+            DRI        & {PSNR [dB]} & {SSIM [\%]} & {LPIPS [\%]} \\
+            \midrule
+            {(5, 10)}  & 17.99       & 61.56       & 60.88        \\
+            {(15, 20)} & 13.44       & 31.34       & 44.29        \\
+            {(25, 30)} & 11.24       & 19.95       & 34.26        \\
+            {(35, 40)} & 9.77        & 14.87       & 26.36        \\
+            {(45, 50)} & 8.69        & 12.09       & 20.21        \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption[Baseline values on the $64\stimes 64$ upscaled CIFAR-10 dataset]{Baseline values on the $64\stimes 64$ upscaled CIFAR-10 dataset\\(random shapes mask generation)}
+    \label{table:cifar-base}
+\end{table}
+Furthermore, traditional inpainting methodologies, discussed previously in \autoref{section:inpaint}, were applied to the upscaled CIFAR-10 dataset. This approach allowed for the computation of the same metrics, facilitating a comprehensive evaluation of the inpainting outcomes yielded by these classic methods, as denoted in \autoref{tabel:classic_cifar}.
+\begin{table}[ht]
+    \centering
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{cccccccccc}
+            \toprule
+                                           & \multicolumn{3}{c}{{Telea}}     & \multicolumn{3}{c}{{Navier-Stokes}} & \multicolumn{3}{c}{{PatchMatch}}                                                                                                                                                                       \\
+            \cmidrule(l){2-4} \cmidrule(l){5-7} \cmidrule(l){8-10}
+            \multicolumn{1}{c}{{DRI}}      & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}}     & {LPIPS [\%]}                     & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} \\
+            \midrule
+            \multicolumn{1}{c}{{(5, 10)}}  & \multicolumn{1}{c}{38.96}       & \multicolumn{1}{c}{98.88}           & 99.11                            & \multicolumn{1}{c}{42.57}       & \multicolumn{1}{c}{99.59}       & 99.77        & \multicolumn{1}{c}{39.35}       & \multicolumn{1}{c}{98.99}       & 99.01        \\
+            \multicolumn{1}{c}{{(15, 20)}} & \multicolumn{1}{c}{33.74}       & \multicolumn{1}{c}{96.52}           & 96.09                            & \multicolumn{1}{c}{36.73}       & \multicolumn{1}{c}{98.57}       & 98.93        & \multicolumn{1}{c}{34.50}       & \multicolumn{1}{c}{97.04}       & 95.51        \\
+            \multicolumn{1}{c}{{(25, 30)}} & \multicolumn{1}{c}{31.01}       & \multicolumn{1}{c}{93.73}           & 91.96                            & \multicolumn{1}{c}{33.45}       & \multicolumn{1}{c}{97.07}       & 97.33        & \multicolumn{1}{c}{32.11}       & \multicolumn{1}{c}{94.95}       & 91.25        \\
+            \multicolumn{1}{c}{{(35, 40)}} & \multicolumn{1}{c}{28.95}       & \multicolumn{1}{c}{90.43}           & 87.30                            & \multicolumn{1}{c}{30.89}       & \multicolumn{1}{c}{94.91}       & 94.76        & \multicolumn{1}{c}{30.40}       & \multicolumn{1}{c}{92.62}       & 87.09        \\
+            \multicolumn{1}{c}{{(45, 50)}} & \multicolumn{1}{c}{27.20}       & \multicolumn{1}{c}{86.53}           & 82.67                            & \multicolumn{1}{c}{28.68}       & \multicolumn{1}{c}{91.79}       & 91.10        & \multicolumn{1}{c}{28.86}       & \multicolumn{1}{c}{89.75}       & 83.03        \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption[Results for classic methods on the $64\stimes 64$ upscaled CIFAR-10 dataset]{Results for classic methods on the $64\stimes 64$ upscaled CIFAR-10 dataset\\(random shapes mask generation)}
+    \label{tabel:classic_cifar}
+\end{table}
+
+In order to validate the effectiveness of the U-Net architecture and affirm its implementation correctness, the inference phase was executed on an identical test dataset to the one used by the traditional inpainting methods. This allowed for a direct and equitable comparison of the U-Net architecture's results with those obtained by traditional methods. The outcomes of this comparative analysis, as catalogued in \autoref{tabel:unet_cifar}, provide valuable insights into the performance of the proposed deep learning solution vis-à-vis that of the traditional inpainting methodologies.
+\begin{table}[ht]
+    \centering
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{cccccccccc}
+            \toprule
+                                           & \multicolumn{3}{c}{{MAE}}       & \multicolumn{3}{c}{{MSE}}       & \multicolumn{3}{c}{{SSIM-MAE}}                                                                                                                                                                       \\
+            \cmidrule(l){2-4} \cmidrule(l){5-7} \cmidrule(l){8-10}
+            \multicolumn{1}{c}{{DRI}}      & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]}                   & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} \\
+            \midrule
+            \multicolumn{1}{c}{{(5, 10)}}  & \multicolumn{1}{c}{33.77}       & \multicolumn{1}{c}{96.40}       & 97.75                          & \multicolumn{1}{c}{32.75}       & \multicolumn{1}{c}{95.57}       & 97.07        & \multicolumn{1}{c}{30.71}       & \multicolumn{1}{c}{96.64}       & 96.74        \\
+            \multicolumn{1}{c}{{(15, 20)}} & \multicolumn{1}{c}{31.70}       & \multicolumn{1}{c}{95.18}       & 97.40                          & \multicolumn{1}{c}{31.82}       & \multicolumn{1}{c}{95.11}       & 97.11        & \multicolumn{1}{c}{29.22}       & \multicolumn{1}{c}{94.70}       & 96.56        \\
+            \multicolumn{1}{c}{{(25, 30)}} & \multicolumn{1}{c}{31.23}       & \multicolumn{1}{c}{94.29}       & 96.53                          & \multicolumn{1}{c}{31.36}       & \multicolumn{1}{c}{93.28}       & 95.57        & \multicolumn{1}{c}{30.14}       & \multicolumn{1}{c}{94.32}       & 95.23        \\
+            \multicolumn{1}{c}{{(35, 40)}} & \multicolumn{1}{c}{29.83}       & \multicolumn{1}{c}{92.50}       & 95.61                          & \multicolumn{1}{c}{30.55}       & \multicolumn{1}{c}{91.86}       & 95.09        & \multicolumn{1}{c}{28.46}       & \multicolumn{1}{c}{93.57}       & 94.92        \\
+            \multicolumn{1}{c}{{(45, 50)}} & \multicolumn{1}{c}{28.84}       & \multicolumn{1}{c}{91.27}       & 94.26                          & \multicolumn{1}{c}{29.45}       & \multicolumn{1}{c}{89.67}       & 92.86        & \multicolumn{1}{c}{26.99}       & \multicolumn{1}{c}{91.91}       & 88.49        \\
+            \bottomrule
+        \end{tabular}%
+    }
+    \caption[Results for U-Net on the $64\stimes 64$ upscaled CIFAR-10 dataset]{Results for U-Net on the $64\stimes 64$ upscaled CIFAR-10 dataset\\(random shapes mask generation)}
+    \label{tabel:unet_cifar}
+\end{table}
+
+During the network's training phase, three distinct loss functions were employed: Mean Squared Error (MSE), Mean Absolute Error (MAE) and a composite function designated as SSIM-MAE. The SSIM-MAE loss function represents a combination of MAE and the Structural Similarity Index Measure (SSIM) loss. The composition of the SSIM-MAE is determined by a weighting constant, $\alpha$ (alpha), which falls within the interval $(0, 1)$. The role of $\alpha$ is to balance the contributions of MAE and SSIM when computing the composite loss. Through empirical analysis, an optimal alpha value of $0.75$ was determined. It should be noted that this loss function can be viewed as a simplified version of the one delineated in \cite{ssim-mae}, wherein the Multi-Scale SSIM is employed instead of the simple SSIM. The specific mathematical formulations that characterise each of these loss functions are to be detailed in the next equations:
+\begin{equation}
+    \mathcal{L}_{\text{MSE}} = \dfrac{1}{T_b} \sum\limits_{k=1}^{T_b} \operatorname{MSE}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right)\,,
+\end{equation}
+\begin{equation}
+    \mathcal{L}_{\text{MAE}} = \dfrac{1}{T_b} \sum\limits_{k=1}^{T_b} \operatorname{MAE}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right)\,,
+\end{equation}
+\begin{equation}
+    \mathcal{L}_{\text{SSIM-MAE}} = \dfrac{1}{T_b} \sum\limits_{k=1}^{T_b} \left[\alpha \cdot \operatorname{MAE}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right) + \left(1 - \alpha \right) \cdot \left(1 - \operatorname{SSIM}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right)\right) \right]\,,
+\end{equation}
+where $T_b$ denotes the number of samples in the current batch, $\symbf{y}$ represents the ground-truth image value and $\symbf{\hat{y}}$ signifies the predicted value.
+
+The optimisation algorithm of choice was AMSGrad, the refined variant of the Adam optimiser, as detailed in \autoref{section:nn}, with a designated learning rate of $0.01$. In an effort to refine the training process, the feature involving callbacks during training available in \texttt{TensorFlow} was leveraged. Specifically, three distinct callbacks were employed to boost the network's performance and training robustness:
+\begin{itemize}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+
+    \item \textbf{Reduce Learning Rate on Plateau} (\texttt{ReduceLROnPlateau}) -- This callback dynamically adjusts the learning rate by a fixed constant, lowering it up to a predetermined minimum value if the validation loss fails to show improvement over a specified number of epochs.
+
+    \item \textbf{Early Stopping} (\texttt{EarlyStopping}) -- This mechanism halts training when the validation loss ceases to improve for a fixed number of epochs. This number is invariably larger than the one specified for the previous callback. This strategy, coupled with a very large number of training epochs, prevents the wasteful continuation of training when no further improvement is discernible.
+
+    \item \textbf{Model Checkpoint} (\texttt{ModelCheckpoint}) -- This callback saves the trained model to the disk if the validation loss registers an improvement in the current epoch. At the end of the training phase, it restores the model's weights to the best-saved ones, thereby ensuring that the optimal model configuration is retained.
+\end{itemize}
+
+Throughout the training process, the evaluation was confined to two metrics: PSNR and SSIM. This selection was necessitated by the fact that the use of LPIPS, while insightful, is computationally intensive and its application would have slowed down the training process. A visual representation of the loss and evaluation metrics' evolution, corresponding to each of the three types of loss functions employed, is presented in \autoref{fig:train_metrics_cifar}.
+\begin{table}[ht]
+    \centering
+    \resizebox{!}{1.55cm}{
+        \begin{tabular}{cccc}
+            \toprule
+            DRI        & {PSNR [dB]} & {SSIM [\%]} & {LPIPS [\%]} \\
+            \midrule
+            {(5, 10)}  & 17.31       & 81.37       & 65.05        \\
+            {(15, 20)} & 12.90       & 57.43       & 51.98        \\
+            {(25, 30)} & 10.75       & 40.80       & 46.50        \\
+            {(35, 40)} & 9.31        & 29.62       & 42.74        \\
+            {(45, 50)} & 8.27        & 22.10       & 39.11        \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption[Baseline values on the $128\stimes 128$ random-cropped COCO dataset]{Baseline values on the $128\stimes 128$ random-cropped COCO dataset\\(random shapes mask generation)}
+    \label{table:coco-base}
+\end{table}
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup[subfigure]{justification=centering}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_loss_mae.pdf}
+        \caption{MAE loss}
+        \label{fig:loss_mae}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_psnr_mae.pdf}
+        \caption{PSNR on MAE loss}
+        \label{fig:psnr_mae}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_ssim_mae.pdf}
+        \caption{SSIM on MAE loss}
+        \label{fig:ssim_mae}
+    \end{subfigure}
+    \vskip\baselineskip
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_loss_mse.pdf}
+        \caption{MSE loss}
+        \label{fig:loss_mse}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_psnr_mse.pdf}
+        \caption{PSNR on MSE loss}
+        \label{fig:psnr_mse}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_ssim_mse.pdf}
+        \caption{SSIM on MSE loss}
+        \label{fig:ssim_mse}
+    \end{subfigure}
+    \vskip\baselineskip
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_loss_ssim.pdf}
+        \caption{SSIM loss}
+        \label{fig:loss_ssim}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_psnr_ssim.pdf}
+        \caption{PSNR on SSIM loss}
+        \label{fig:psnr_ssim}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_ssim_ssim.pdf}
+        \caption{SSIM on SSIM loss}
+        \label{fig:ssim_ssim}
+    \end{subfigure}
+    \caption[Comparison of training metric of U-Net on upscaled CIFAR-10]{Comparison of training metric of U-Net on upscaled CIFAR-10\\(random shapes mask generation)}
+    \label{fig:train_metrics_cifar}
+\end{figure}
+
+The succeeding phase involves the training, evaluation and testing of the U-Net model using larger $128
+    \stimes 128$ patches from the COCO dataset. Mirroring the previous approach, a baseline was established on the masked images, as catalogued in \autoref{table:coco-base} and the performance metrics were computed employing traditional inpainting methods, as documented in \autoref{tabel:classic_coco}. Following this, the U-Net model, trained with the same methodology, was deployed for the inpainting task and the corresponding test metrics were computed, with the results collated in \autoref{tabel:unet_coco}.
+
+\begin{table}[ht]
+    \centering
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{cccccccccc}
+            \toprule
+                                           & \multicolumn{3}{c}{{Telea}}     & \multicolumn{3}{c}{{Navier-Stokes}} & \multicolumn{3}{c}{{PatchMatch}}                                                                                                                                                                       \\
+            \cmidrule(l){2-4} \cmidrule(l){5-7} \cmidrule(l){8-10}
+            \multicolumn{1}{c}{{DRI}}      & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}}     & {LPIPS [\%]}                     & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} \\
+            \midrule
+            \multicolumn{1}{c}{{(5, 10)}}  & \multicolumn{1}{c}{36.40}       & \multicolumn{1}{c}{97.77}           & 98.41                            & \multicolumn{1}{c}{36.67}       & \multicolumn{1}{c}{97.95}       & 98.53        & \multicolumn{1}{c}{36.44}       & \multicolumn{1}{c}{97.60}       & 98.33        \\
+            \multicolumn{1}{c}{{(15, 20)}} & \multicolumn{1}{c}{31.46}       & \multicolumn{1}{c}{93.77}           & 95.26                            & \multicolumn{1}{c}{31.51}       & \multicolumn{1}{c}{94.21}       & 95.56        & \multicolumn{1}{c}{31.38}       & \multicolumn{1}{c}{93.18}       & 95.16        \\
+            \multicolumn{1}{c}{{(25, 30)}} & \multicolumn{1}{c}{28.87}       & \multicolumn{1}{c}{89.48}           & 91.48                            & \multicolumn{1}{c}{28.93}       & \multicolumn{1}{c}{90.16}       & 91.91        & \multicolumn{1}{c}{28.96}       & \multicolumn{1}{c}{88.30}       & 91.77        \\
+            \multicolumn{1}{c}{{(35, 40)}} & \multicolumn{1}{c}{27.06}       & \multicolumn{1}{c}{84.84}           & 87.01                            & \multicolumn{1}{c}{27.07}       & \multicolumn{1}{c}{85.70}       & 87.54        & \multicolumn{1}{c}{27.19}       & \multicolumn{1}{c}{82.90}       & 88.07        \\
+            \multicolumn{1}{c}{{(45, 50)}} & \multicolumn{1}{c}{25.54}       & \multicolumn{1}{c}{79.79}           & 81.95                            & \multicolumn{1}{c}{25.49}       & \multicolumn{1}{c}{80.78}       & 82.46        & \multicolumn{1}{c}{25.78}       & \multicolumn{1}{c}{77.04}       & 84.13        \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption[Results for classic methods on the $128\stimes 128$ random-cropped COCO dataset]{Results for classic methods on the $128\stimes 128$ random-cropped COCO dataset\\(random shapes mask generation)}
+    \label{tabel:classic_coco}
+\end{table}
+
+\begin{table}[ht]
+    \centering
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{cccccccccc}
+            \toprule
+                                           & \multicolumn{3}{c}{{MAE}}       & \multicolumn{3}{c}{{MSE}}       & \multicolumn{3}{c}{{SSIM-MAE}}                                                                                                                                                                       \\
+            \cmidrule(l){2-4} \cmidrule(l){5-7} \cmidrule(l){8-10}
+            \multicolumn{1}{c}{{DRI}}      & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]}                   & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} & \multicolumn{1}{c}{{PSNR [dB]}} & \multicolumn{1}{c}{{SSIM [\%]}} & {LPIPS [\%]} \\
+            \midrule
+            \multicolumn{1}{c}{{(5, 10)}}  & \multicolumn{1}{c}{27.11}       & \multicolumn{1}{c}{81.55}       & 87.34                          & \multicolumn{1}{c}{26.45}       & \multicolumn{1}{c}{80.05}       & 86.87        & \multicolumn{1}{c}{24.49}       & \multicolumn{1}{c}{83.16}       & 87.15        \\
+            \multicolumn{1}{c}{{(15, 20)}} & \multicolumn{1}{c}{26.06}       & \multicolumn{1}{c}{78.07}       & 85.93                          & \multicolumn{1}{c}{25.55}       & \multicolumn{1}{c}{77.44}       & 83.29        & \multicolumn{1}{c}{23.77}       & \multicolumn{1}{c}{82.13}       & 86.91        \\
+            \multicolumn{1}{c}{{(25, 30)}} & \multicolumn{1}{c}{25.08}       & \multicolumn{1}{c}{73.60}       & 80.78                          & \multicolumn{1}{c}{25.35}       & \multicolumn{1}{c}{73.57}       & 77.35        & \multicolumn{1}{c}{23.50}       & \multicolumn{1}{c}{77.02}       & 79.24        \\
+            \multicolumn{1}{c}{{(35, 40)}} & \multicolumn{1}{c}{24.77}       & \multicolumn{1}{c}{70.13}       & 78.34                          & \multicolumn{1}{c}{23.76}       & \multicolumn{1}{c}{67.72}       & 71.93        & \multicolumn{1}{c}{22.79}       & \multicolumn{1}{c}{73.47}       & 71.93        \\
+            \multicolumn{1}{c}{{(45, 50)}} & \multicolumn{1}{c}{24.26}       & \multicolumn{1}{c}{66.44}       & 73.22                          & \multicolumn{1}{c}{23.43}       & \multicolumn{1}{c}{65.06}       & 69.24        & \multicolumn{1}{c}{22.66}       & \multicolumn{1}{c}{69.94}       & 73.44        \\
+            \bottomrule
+        \end{tabular}%
+    }
+    \caption[Results for U-Net on the $128\stimes 128$ random-cropped COCO dataset]{Results for U-Net on the $128\stimes 128$ random-cropped COCO dataset\\(random shapes mask generation)}
+    \label{tabel:unet_coco}
+\end{table}
+
+Following the initial approach, we now turn our attention to another hybrid loss function known as LPIPS-MAE, which incorporates the LPIPS from \cite{lpips}. Similar to SSIM-MAE, LPIPS-MAE incorporates a parameter $\alpha$ (alpha) to balance the contribution of MAE and LPIPS components when calculating the hybrid loss. The impetus for introducing this loss function lies in LPIPS' superior capacity to extract perceptual information from images compared to SSIM, potentially leading to more visually appealing inpainting results. Moreover, SSIM presents a limitation when applied to colour images, a shortcoming not shared by LPIPS. Additionally, the $\alpha$ parameter, integral to the computation of the LPIPS-MAE loss function, was empirically determined. Following experimentation, an optimal alpha value of $0.75$ was ascertained, providing the most effective balance between the MAE and LPIPS components of the loss function. The mathematical formulation of the LPIPS-MAE loss function is as follows:
+\begin{equation}
+    \mathcal{L}_{\text{LPIPS-MAE}} = \dfrac{1}{T_b} \sum\limits_{k=1}^{T_b} \left[\alpha \cdot \operatorname{MAE}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right) + \left(1 - \alpha \right) \cdot \operatorname{LPIPS}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right) \right]\,.
+\end{equation}
+
+The choice of coupling MAE with these two loss functions, as opposed to MSE, might initially seem counterintuitive. However, empirical evidence gathered during the training phase, as depicted in \autoref{fig:train_metrics_comp}, suggested that MSE demonstrated a more unstable and oscillating behaviour compared to MAE. Thus, the selection of MAE was made to account for this observed behaviour. Furthermore, it was considered that for larger patches such as those from the COCO dataset, the SSIM and LPIPS components of the loss functions may exhibit instability. Hence, the MAE component provides a more reliable and stable counterbalance.
+
+While the initial random shapes mask generation algorithm proved instrumental in validating the model's performance and correctness, providing a fundamental benchmark, it fell short in generating masks of practical use. Consequently, the subsequent phase of development necessitated a transition towards a more sophisticated masking technique. The modified freeform algorithm, as highlighted in \autoref{section:preprocess}, was adopted for its ability to generate masks that mimic brush-like strokes, thereby providing a more realistic and practical approach to the task at hand.
+
+In the initial stages of the experimental approach, the U-Net model was constructed employing traditional convolution operations. To explore potential improvements, an experiment was conceived where gated convolutions were integrated into the model, as elucidated in \autoref{section:cnn}. Unfortunately, the attempt to enhance the model with gated convolutions led to unsatisfactory outcomes. Specifically, the loss function exhibited high levels of oscillation during the training phase, implying a lack of stability and consistent convergence. Owing to these erratic and suboptimal results, this trajectory in model development was abandoned.
+\begin{figure}[ht]
+    \centering
+    \captionsetup[subfigure]{justification=centering}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_loss_comp_mse.pdf}
+        \caption{MSE loss}
+        \label{fig:loss_comp_mse}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/model_history_loss_comp_mae.pdf}
+        \caption{MAE loss}
+        \label{fig:loss_comp_mae}
+    \end{subfigure}
+    \caption[Training loss of GatedResNet on COCO using MSE and MAE loss]{Training loss of GatedResNet on COCO using MSE and MAE loss\\(freeform mask generation)}
+    \label{fig:train_metrics_comp}
+\end{figure}
+
+The unsuccessful implementation of gated convolutions within the U-Net model did not deter further exploration. In a successive experiment aimed at enabling the use of gated convolutions, a different network architecture, reminiscent of a component of the pipeline detailed in \cite{free-form-inpainting}, was put into practice. This architecture, namely ResNet, featuring $13$ residual blocks, is further delineated in \autoref{section:resnet}.
+
+To ensure an effective comparison between the original U-Net and the newly implemented architecture, which, for the purposes of this discourse, will henceforth be referred to as GatedResNet, training was performed on the gated model using each of the four loss functions previously described. However, to simplify the comparison, this training was limited to a specific degradation ratio interval of $(25, 30)$. This narrower focus allowed a more nuanced evaluation, as represented in \autoref{table:results}, thus paving the way for the determination of the optimal architecture and, correspondingly, the most suitable loss function.
+
+\begin{table}[ht]
+    \centering
+    \resizebox{!}{3cm}{
+        \begin{tabular}{lccc}
+            \toprule
+            {Network}                 & {PSNR [dB]} & {SSIM [\%]} & {LPIPS [\%]} \\
+            \midrule
+            {U-Net (MSE)}             & 22.30       & 68.97       & 76.81        \\
+            {U-Net (MAE)}             & 21.54       & 63.60       & 71.54        \\
+            {U-Net (SSIM-MAE)}        & 21.49       & 72.27       & 73.04        \\
+            {U-Net (LPIPS-MAE)}       & 21.67       & 64.62       & 70.22        \\
+            {GatedResNet (MSE)}       & 23.82       & 72.88       & 78.29        \\
+            {GatedResNet (MAE)}       & 23.03       & 71.21       & 73.81        \\
+            {GatedResNet (SSIM-MAE)}  & 21.37       & 67.11       & 68.62        \\
+            {GatedResNet (LPIPS-MAE)} & 23.74       & 76.50       & 80.62        \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption[Test metrics for $(25, 30)$ degradation ratio interval]{Test metrics for (25, 30) degradation ratio interval\\(freeform mask generation)}
+    \label{table:results}
+\end{table}
+
+Following this particular comparison, the model yielding the highest metrics, as presented in \autoref{table:results}, was subjected to training across the remaining degradation ratio intervals. Thereupon, this model was affirmed as the final choice for the image inpainting task. The inpainting process for a masked image proceeds as follows:
+\begin{enumerate}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+
+    \item The image along with the mask are segmented into $128 \stimes 128$ patches. This process includes padding where necessary to accommodate the prescribed patch size.
+
+    \item Each patch undergoes an evaluation process. If the mask of the current patch contains values of '1', indicating the presence of a masked area, the corresponding image patch is subject to inpainting. The appropriate model for this step is determined based on the percentage of values of '1' present in the mask, denoting the degradation ratio.
+
+    \item The final step involves reconstructing the full image from the inpainted patches. If padding was employed during the segmentation process, it is duly eliminated during image reconstruction to restore the image to its original dimensions.
+\end{enumerate}
+
+As depicted in \autoref{fig:masking}, a three-part illustration is presented: the original image, the corresponding mask that denotes the region to be inpainted and the resultant image after the application of the mask, which represents the preliminary image intended for the inpainting procedure. In order to facilitate an efficient comparative analysis between the GatedResNet architecture trained with the LPIPS-MAE loss and the three classical inpainting algorithms discussed in \autoref{section:inpaint}, we performed the inpainting process on the previously masked image using these four different methods. The resulting images from these distinct approaches are illustrated in \autoref{fig:inpainting}. To further refine the comparison and shed light on the intricacies of each method's inpainting process, specific patches have been selected and extracted from the inpainting regions of each image. These chosen patches serve as a magnified lens into the procedural details, offering a more granulated view of the variances between each approach. By this means, the aim is to provide a robust and comprehensive exploration of the process and the performance of the inpainting algorithms.
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup[subfigure]{justification=centering}
+    \begin{subfigure}[ht]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/inpaint.png}
+        \caption{Original image}
+        \label{fig:original}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/mask.png}
+        \caption{Inpainting mask}
+        \label{fig:mask}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/masked.png}
+        \caption{Masked image}
+        \label{fig:masked}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[ht]{0.32\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_inpaint2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_inpaint.png}
+        \caption{Original image - Patches}
+        \label{fig:original-patch}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.32\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_mask2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_mask.png}
+        \caption{Inpainting mask - Patches}
+        \label{fig:mask-patch}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.32\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_masked2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_masked.png}
+        \caption{Masked image - Patches}
+        \label{fig:masked-patch}
+    \end{subfigure}
+
+    \caption{The masking process for an image}
+    \label{fig:masking}
+\end{figure}
+
+In light of the prior discussion, it would be instructive to refer to \autoref{chaper:code} for details regarding the implemented solution and to find out the course of action on how to access it. Furthermore, a comprehensive collection of supplemental results, specifically images, is presented for examination in \autoref{chaper:results}.
+
+\begin{figure}[ht]
+    \centering
+    \captionsetup[subfigure]{justification=centering}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/ns.png}
+        \caption{Navier-Stokes}
+        \label{fig:ns}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/telea.png}
+        \caption{Telea}
+        \label{fig:telea}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_ns2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_ns.png}
+        \caption{Navier-Stokes - Patches}
+        \label{fig:ns-patch}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_telea2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_telea.png}
+        \caption{Telea - Patches}
+        \label{fig:telea-patch}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/pm.png}
+        \caption{PatchMatch}
+        \label{fig:pm}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{proposed-solutions/result.png}
+        \caption{GatedResNet}
+        \label{fig:inpainted}
+    \end{subfigure}
+
+    \vskip\baselineskip
+
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_pm2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_pm.png}
+        \caption{PatchMatch - Patches}
+        \label{fig:pm-patch}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[ht]{0.49\textwidth}
+        \centering
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_result2.png}
+        \hspace*{0.5mm}
+        \includegraphics[width=0.46\textwidth]{proposed-solutions/patch_result.png}
+        \caption{GatedResNet - Patches}
+        \label{fig:inpainted-patch}
+    \end{subfigure}
+
+    \caption{Comparison of inpainting methods}
+    \label{fig:inpainting}
+\end{figure}

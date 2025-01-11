@@ -1,0 +1,509 @@
+\numberedchapter{Theoretical Aspects}
+
+% ----------------------------------------
+\numberedsection{Visual Representations}
+
+\numberedsubsection{The digital image}
+
+\textbf{Images} are visual representations of data that are captured, processed and stored in digital format. They consist of individual pixels (i.e. picture element), which are the smallest unit of an image. Images may be seen from the perspective of digital signal processing as $2D$ signals that are represented by a matrix of pixel values. The pixels are organized in a grid and each pixel in the picture corresponds to a discrete value that indicates the intensity at that position. The term grey level is often used to refer to the intensity of monochrome (grayscale) images. Individual monochrome images are combined to create colour images (e.g. in the RGB colour system a colour image consists of three individual monochrome images, referred to as the red, green and blue components or channels).~\supercite{vertan}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.4\textwidth]{theoretical-aspects/image.pdf}
+    \caption{Matrix representation of an image}
+    \label{fig:image}
+\end{figure}
+
+Analogue visual representations are continuous in terms of both the spatial domain and intensity. To be able to store and manipulate them in digital form, the captured images need to be digitized. In the spatial domain, sampling is used to obtain discrete regions, each of which contains a discrete intensity value that was acquired through quantisation. Hence, an image can alternatively be thought of as a two-dimensional function, $f(r, c)$, where $r$ and $c$ are spatial plane coordinates and the amplitude of $f$ at any pair of coordinates $(r, c)$ is the aforementioned intensity. Conventionally, the image's upper-left corner serves as the origin of the coordinate system. From top to bottom, the row's coordinate advances, whereas the column's coordinate advances from left to right. An image has a size of $M \stimes N$, where $M$ is the number of rows and $N$ is the number of columns~\supercite{matlab}. Images with many channels can be viewed as a vector comprising of their corresponding components, so it can be said that the total size of this type of image is $M \stimes N \stimes L$, where $L$ is the number of channels. As a result, the two-dimensional function is now $f(r, c, l)$, where $l$ represents the current channel and $r$ and $c$ retain their original meanings. For example, the indexing scheme for an RGB image can be seen in \autoref{fig:rgb}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{theoretical-aspects/rgb.pdf}
+    \caption{Simple $3 \stimes 3$ components of an RGB image}
+    \label{fig:rgb}
+\end{figure}
+
+\numberedsubsection{Traditional and perceptual metrics}
+
+\textbf{Image metrics} are used to evaluate the quality of images in various applications, such as image compression, image restoration and image enhancement. Traditional image metrics are based on mathematical measures of distance or similarity between two images, while perceptual image metrics take into account the human perception and semantic aspects of images.
+
+\textbf{Traditional image metrics} include Mean Absolute Error, Mean Squared Error, Signal-to-Noise Ratio and Peak Signal-to-Noise Ratio. These metrics are based on the comparison of pixel values or statistical properties of two images and provide a quantitative measure of image quality. However, they may not always correlate well with human perception of image quality and may not capture certain aspects of image quality, such as texture or colour.
+
+\textbf{Perceptual image metrics}, on the other hand, aim to capture the perceptual and semantic aspects of images. These metrics are based on models of human visual perception and can take into account factors such as contrast, texture and colour appearance. Some examples of perceptual image metrics include the Structural Similarity Index Measure and the Learned Perceptual Image Patch Similarity.
+
+In the upcoming sections, definitions and other details will be provided for both traditional and perceptual metrics that are commonly used for evaluating image quality. The functioning of each metric will be explored, while its limitations will also be discussed.
+
+In the following, we will denote $g$ as the original or ground truth image, while the variable $f$ refers to the processed or reconstructed image.
+
+\subsubsection*{Mean Absolute Error (MAE)}
+
+The Mean Absolute Error metric is based on the $\ell_1$ norm where its value is scaled by the total number of pixels in the image. Thus, the metric is in fact the normed Manhattan distance between the two images, as defined by the following equation:
+\begin{equation}
+    \operatorname{MAE}(f, g) = \dfrac{1}{MNL} \sum\limits_{r=1}^{M}\sum\limits_{c=1}^{N}\sum\limits_{l=1}^{L} \left| f(r, c, l) - g(r, c, l) \right|\,.
+\end{equation}
+\subsubsection*{Mean Squared Error (MSE)}
+The Mean Squared Error metric is also based on a norm where its value is scaled by the total number of pixels in the image. The used function is $\ell_2$, so  the metric is actually the normed Euclidean distance between the two images and is defined as follows:
+\begin{equation}
+    \operatorname{MSE}(f, g) = \dfrac{1}{MNL} \sum\limits_{r=1}^{M}\sum\limits_{c=1}^{N}\sum\limits_{l=1}^{L} \left( f(r, c, l) - g(r, c, l) \right) ^ 2\,.
+\end{equation}
+\subsubsection*{Signal-to-Noise Ratio (SNR)}
+The Signal-to-Noise Ratio is a metric that measures the quality of an image by comparing the power of the signal (the image) to the power of the noise in the image. The SNR is typically computed as the ratio of the mean pixel value of the signal to the standard deviation of the noise in the image and is described by the equation below:
+\begin{equation}
+    \operatorname{SNR}(f, g) = 10 \log_{10} \dfrac{\dfrac{1}{MNL}\sum\limits_{r=1}^{M}\sum\limits_{c=1}^{N}\sum\limits_{l=1}^{L} \left(g(r, c, l) \right) ^ 2}{\dfrac{1}{MNL}\sum\limits_{r=1}^{M}\sum\limits_{c=1}^{N}\sum\limits_{l=1}^{L} \left( f(r, c, l) - g(r, c, l) \right) ^ 2} \ [dB]\,.
+\end{equation}
+The SNR is measured in decibels (dB), so a higher value indicates a stronger signal relative to the noise, and therefore a higher-quality image with less noise. The SNR may not always be the most appropriate metric for evaluating image quality, as it assumes that the noise in the image is independent and identically distributed, but in many cases, the noise in images can be correlated and exhibit spatial structure.
+
+\subsubsection*{Peak Signal-to-Noise Ratio (PSNR)}
+The Peak Signal-to-Noise Ratio is a metric that measures the quality of an image by comparing the maximum possible pixel value of the signal (the image) to the power of the noise in the image. The PSNR is typically computed as the ratio of the peak signal value of the signal (usually 255 for an 8-bit image) to the standard deviation of the noise in the image and is defined as follows:
+\begin{equation}
+    \operatorname{PSNR}(f, g) = 10 \log_{10} \dfrac{\underset{(r, c, l)}{\max} \left(g(r, c, l) \right) ^ 2}{\dfrac{1}{MNL}\sum\limits_{r=1}^{M}\sum\limits_{c=1}^{N}\sum\limits_{l=1}^{L} \left( f(r, c, l) - g(r, c, l) \right) ^ 2} \ [dB]\,.
+\end{equation}
+The PSNR has the same limitations as the SNR regarding the statistical proprieties of the signal when used to measure the quality of images.
+
+\subsubsection*{Structural Similarity Index Measure (SSIM)}
+Natural digital images possess significant structural characteristics: their pixel values demonstrate robust interdependencies, particularly in spatially adjacent regions, and these interdependencies convey essential information concerning the organization of the objects within the visual scene~\supercite{ssim}. Therefore, the main problem with the above metrics is that they are all based solely on mathematical measures of distance or similarity between two images, without taking into account the perceptual or semantic aspects of the images. For example, two images that have similar MAE or MSE may still look different to a human observer due to differences in texture, contrast, or other visual features. Additionally, a high SNR or PSNR value may not necessarily correspond to a high subjective quality of the image. Therefore, while these metrics are useful for comparing and optimizing algorithms based on mathematical measures, they should be used in conjunction with other metrics that include perceptual information about the signals or images.
+
+The Structural Similarity Index Measure is a widely used perceptual metric in image processing that measures the similarity between two images, by aggregating local and adjacent image characteristics. The SSIM ranges between $0$ and $1$, where a value of 1 indicates perfect similarity between the two images. This metric has proven to be effective in assessing image quality in a variety of applications, including image compression, denoising, reconstruction and super-resolution~\supercite{ssim,ssim-use2,ssim-use3}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{theoretical-aspects/ssim.png}
+    \caption[Diagram of the structural similarity (SSIM) measurement system]{Diagram of the structural similarity (SSIM) measurement system~\supercite{ssim}}
+    \label{fig:ssim}
+\end{figure}
+
+As can be seen in \autoref{fig:ssim}, the SSIM proposes three comparison functions: \textit{luminance} measures the overall brightness or intensity of an image, \textit{contrast} calculates the difference between the brightest and darkest parts of an image and \textit{structure} measures the patterns and edges in an image. They are defined as follows:
+\begin{itemize}
+    \item Luminance
+          \begin{equation}
+              l(\symbf{x}, \symbf{y}) = \dfrac{2 \mu_x \mu_y + C_1}{\mu_x^2 + \mu_y^2 + C_1}\,, \label{eq:lum}
+          \end{equation}
+    \item Contrast
+          \begin{equation}
+              c(\symbf{x}, \symbf{y}) = \dfrac{2 \sigma_x \sigma_y + C_2}{\sigma_x^2 + \sigma_y^2 + C_2}\,, \label{eq:con}
+          \end{equation}
+    \item Structure
+          \begin{equation}
+              s(\symbf{x}, \symbf{y}) = \dfrac{\sigma_{xy} + C_3}{\sigma_x + \sigma_y + C_3}\,, \label{eq:str}
+          \end{equation}
+\end{itemize}
+
+Here-above, the three constants (i.e. $C_1$, $C_2$ and $C_3 \in \mathbb{R}$) are present to avoid instability or division by zero when any of the denominators is very close to zero. They are systematically set using the following definitions:
+\begin{equation}
+    C_1 = (K_1 D)^2 \,, C_2 = (K_2 D) ^ 2 \,, C_3 = \dfrac{C_2}{2} \,,
+\end{equation}
+where D signifies the dynamic range of the pixel values (typically 255 for 8-bit images) and $K_1$ and $K_2$ are very small (i.e. $0 < K_1, K_2 \ll 1$) arbitrarily chosen constants. In the original implementation, their values are $0.01$ and $0.03$ respectively~\supercite{ssim}.
+
+Moreover, it is crucial to take spatiality into account, as, in the context of image quality assessment, employing the SSIM index on a local basis proves more beneficial than applying it globally. Firstly, the statistical attributes of an image tend to exhibit substantial spatial non-stationarity. Secondly, image distortions, which may be either dependent or independent of local image statistics, can also display spatial variability. Lastly, at customary viewing distances, a confined area within the image can be discerned with high resolution by the human observer at a single instance. The computation of local statistics for the current pixel will be performed employing an $11 \stimes 11$ circular-symmetric Gaussian weighting function $\symbf{w} = (w_i)_{1 \leq i \leq W}$, exhibiting a standard deviation of 1.5 samples and normalized to achieve a unit sum~\supercite{ssim}. The process of convolution that forms the basis for how this kernel is applied to every pixel in the image will be further discussed in \autoref{section:cnn}. So the estimates for the local means, dispersions and cross-correlation are computed using the following equations:
+\begin{equation}
+    \mu_x = \sum\limits_{i=1}^W w_i x_i \quad and \quad \mu_y = \sum\limits_{i = 1}^W w_i y_i\,,
+\end{equation}
+\begin{equation}
+    \sigma_x = \sqrt{ \sum\limits_{i=1}^W w_i (x_i - \mu_x)^2} \quad and \quad \sigma_y = \sqrt{ \sum\limits_{i=1}^W w_i (y_i - \mu_y)^2 }\,,
+\end{equation}
+\begin{equation}
+    \sigma_{xy} = \sum\limits_{i=1}^W w_i (x_i - \mu_x) (y_i - \mu_y)\,.
+\end{equation}
+In the above computations, the two signals $\symbf{x}$ and $\symbf{y}$ correspond to the $11 \stimes 11$ patches centred on the currently processed pixel taken from both images and $x_i$ and $y_i$ respectively are the pixels contained in them.  Finally, the three comparison functions from equations \eqref{eq:lum}, \eqref{eq:con} and \eqref{eq:str} are combined to form the similarity measure called the SSIM index:
+\begin{equation}
+    \operatorname{SSIM}(\symbf{x}, \symbf{y}) = \left[ l(\symbf{x}, \symbf{y}) \right] ^ \alpha \cdot \left[ c(\symbf{x}, \symbf{y}) \right] ^ \beta \cdot \left[ s(\symbf{x}, \symbf{y}) \right] ^ \gamma \,,\label{eq:ssim}
+\end{equation}
+where $\alpha > 0, \beta > 0$ and $\gamma > 0$ are parameters used to alter the relative relevance of the three components. To simplify the expression, the original implementation sets $\alpha = \beta = \gamma = 1$, therefore equation \eqref{eq:ssim} becomes:
+\begin{equation}
+    \operatorname{SSIM}(\symbf{x}, \symbf{y}) = \dfrac{\left( 2 \mu_x \mu_y + C_1 \right) \left( 2 \sigma_{xy} + C_2 \right)}{\left( \mu_x^2 + \mu_y^2 + C_1 \right) \left( \sigma_x^2 + \sigma_y^2 + C_2 \right)}\,.
+\end{equation}
+In practical applications, it is typically necessary to obtain a singular, comprehensive quality measure for the entire image. The mean SSIM (MSSIM) index serves to assess the overall image quality as follows:
+\begin{equation}
+    \operatorname{MSSIM}(\symbf{X}, \symbf{Y}) = \dfrac{1}{P} \sum\limits_{k=1}^P \operatorname{SSIM}(\symbf{x}_k, \symbf{y}_k)\,,
+\end{equation}
+where $\symbf{X}$ and $\symbf{Y}$ represent the reference and distorted images, respectively; $\symbf{x}_k$ and $\symbf{y}_k$ denote the image contents at the $k$-th local window and $P$ signifies the total number of local windows in the image~\supercite{ssim}.
+
+However, the Structural Similarity Index Measure has some rather essential limitations. For instance, it does not consider colour information. It, therefore, may not be suitable for applications where colour accuracy is essential, but it can be computed for multiple channels images by using various techniques. For example, for RGB images we can employ three methods. Firstly, the colour image is converted to grey, then the SSIM is computed. Secondly, the image's RGB space is transformed to $\mathrm{Y}\mathrm{C}_\mathrm{b}\mathrm{C}_\mathrm{r}$ and a weighted average of each channel's SSIM calculated, where the luma component is often given greater weight. Lastly, one can compute the SSIM for every constituent layer and take the average to obtain the final metric~\supercite{ssim2}. Throughout this project, this last methodology will be considered and used in the actual implementation.
+
+
+
+\subsubsection*{Learned Perceptual Image Patch Similarity (LPIPS)}
+
+The major issue with the heretofore-presented image metrics is that they assess the quality of an image with respect to a reference one from a strictly analytical standpoint, so one may try to come up with a more human-like method. However, although humans can effortlessly evaluate the perceptual similarity between two images with relative ease, the underlying processes are believed to be considerably intricate. Nevertheless, prevalent traditional metrics, including PSNR and SSIM, are elementary, superficial functions and neglect numerous subtleties of human perception. The distinct challenge presented by computer vision lies in the fact that even the seemingly uncomplicated task of comparing visual patterns persists as an unresolved problem. Visual patterns are not only high-dimensional and highly correlated, but the concept of visual similarity itself is frequently subjective, aiming to emulate human visual perception~\supercite{lpips}.
+
+As defined above, MAE, MSE, SNR and PSNR behave more like a distance and are mostly unsuitable for evaluating structured outputs like colour images because they presume pixel-by-pixel independence. For example, blurring an image causes a small pixel value change, but a noticeable one from a human perception point of view. There have been multiple attempts at solving this issue, such as the aforementioned SSIM, but the main problem is that it only considers structural information in the images, such as edges and texture, and does not take into account colour information or other visual features. This means that SSIM may not accurately capture the perceived similarity of two images in certain cases, such as when one image is brighter or has more saturated colours than the other. So, is there any way of implementing a perceptual similarity? As it turns out, it has been observed that the internal activations of deep convolutional networks, which are trained for high-level image classification tasks, often exhibit an unexpected versatility as a representational space for a substantially broader array of tasks within the computer vision community~\supercite{lpips}.
+
+Therefore, \cite{lpips} defines what is called the Learned Perceptual Image Patch Similarity (LPIPS), which uses different convolutional neural networks, such as VGGNet~\supercite{vgg} or AlexNet~\supercite{alexnet}, to compute a value in the interval $[0, 1]$ to assess the similitude between the two images. A value approaching $0$ means that the images are highly similar (i.e. behaves like a loss function), but for the purposes of this project and to obtain a similar meaning to the SSIM, these values were inverted, so the closer the value to $1$ the better. The metric is calculated as follows: given a convolutional neural network $\mathcal{F}$, deep embeddings are computed (after some numbers of layers, depending on the architecture used), the activations are normalized per channel, each one is scaled by a vector $\symbf{w}$ and the $\ell_2$ distance is computed; then the average across spatial dimension and the sum across all layers are taken. Those distances are then fed to a small fully-connected network with a sigmoid output, resulting in the expected metric. All the mentioned neural network-related terms and notions will be further discussed in \autoref{section:cnn}. (\textit{Note:} AlexNet has been used in this project for calculating the LPIPS metric and VGGNet when training.)
+
+% ----------------------------------------
+\numberedsection{Neural Networks}\label{section:nn}
+
+\textbf{Artificial Neural Networks} (ANNs), also simply known as \textquote{Neural Networks} (NNs), are a class of machine learning models that draw their inspiration from the structure and operation of biological neural networks and are often meant to depict the mapping function of various input variables to matching outputs. Biological neural networks are made up of various assemblies of neurons that are connected by links known as synapses. Sequences of action potentials (i.e. nerve impulses or spikes) are used to encode the information that is transmitted between biological neurons. When a neuron spikes, it releases a neurotransmitter, a chemical that travels a small distance across a synapse before reaching other neurons. A spike is released when the producing neuron gets enough input current to have a membrane potential that is greater than a certain threshold value. This threshold determines whether a neuron participates in the ongoing process by transmitting information to the next members of the current group~\supercite{neuron}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{theoretical-aspects/nn.pdf}
+    \caption[Graph representation of a fully connected neural network]{Graph representation of a fully connected neural network~\supercite{tikz-nn}}
+    \label{fig:nn}
+\end{figure}
+
+A \textbf{Fully-Connected Neural Network} (FCNN), also referred to as a \textbf{Dense Neural Network} (DNN), is one of the most basic neural network types. The basic building block of this model is the neuron, which is modelled as a mathematical function that takes one or more inputs and produces an output. The inputs to a neuron are weighted, meaning that some inputs are more important than others, and the neuron applies an activation function to the weighted sum of the inputs to produce an output. As can be seen in \autoref{fig:nn}, neurons are organized into layers, with each layer consisting of a set of neurons that process the inputs from the previous layer, and each connection between two adjacent layers is represented by a weight matrix. The first layer is called the input layer and serves as a buffer for the input data, and the last layer is called the output layer. There may be one or more hidden layers between the input and output layers and each layer may have a different number of neurons.
+
+\textbf{Activation functions} are an essential component of neural networks. They are used to introduce non-linearity into the output of each neuron, allowing the network to learn and model complex nonlinear relationships in the data. An activation function takes the weighted sum of the inputs to a neuron and applies a mathematical function to produce the output of the neuron. The activation function's output is subsequently passed on to the network's next layer. In the scenario of employing a linear activation function, the output generated by a fully-connected neural network can solely be expressed as a linear composition of the input variables. As such, the neural network would essentially be reduced to a composition of merely the input and output layers, with the weight matrix encapsulating the coefficients pertaining to the aforementioned linear combination. This eliminates the necessity for any auxiliary hidden layers within the network architecture, rendering it a simple linear mapping from the input space to the output space. Unfortunately, linear activation functions have the big disadvantage of not being able to model nonlinear relationships between inputs and outputs and since most problems cannot be adequately modelled with only a linear combination, almost all neural networks are created using non-linear activation functions. Furthermore, activation functions help guarantee that the network's output is bounded, preventing it from becoming arbitrarily large or small, which can lead to numerical instability.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\textwidth]{theoretical-aspects/neuron.pdf}
+    \caption[Derived computation for the outputs of the first hidden layer]{Derived computation for the outputs of the first hidden layer~\supercite{tikz-nn}}
+    \label{fig:neuron}
+\end{figure}
+
+Let us revisit the example presented in \autoref{fig:nn}, a fully-connected neural network comprised of five layers: an input layer containing $n$ neurons, three intermediate or hidden layers composed of $m_1$, $m_2$ and $m_3$ neurons, respectively and an output layer with $k$ neurons. In the context of this model, let us consider $\symbf{x} \in\mathbb{R}^n$ as an input vector and $\symbf{W}^{(1)} \in\mathbb{R}^{m_1 \times n}$ as the weight matrix facilitating the connection from the input layer to the first hidden layer. The vectors $\symbf{z}^{(1)}$, $\symbf{h}^{(1)} \in\mathbb{R}^{m_1}$ represent the input and output vectors of the first hidden layer, respectively, while the function $\Phi_1 \colon \mathbb{R} \to \mathbb{R}$ represents the activation function applied to each neuron in the first hidden layer. The computations involved in determining the output of the first neuron in the initial hidden layer and the collective output of the first hidden layer are explained in \autoref{fig:neuron}. In this figure, $\symbf{b}^{(1)} \in\mathbb{R}^{m_1}$ signifies the vector of biases and applying a function to a vector means applying it element-wise. Given that the outputs of one layer function as the inputs for the following layer, similar computations are employed for each successive hidden layer. This propagative process continues until the final output of the network is generated, using the corresponding parameters and activation functions for each layer.
+
+For us humans, the main goal of our biological neural networks is to attain knowledge through the process called learning. This entails gathering new information to construct new representations of various events and creating links between new information and previously learned patterns. From the perspective of artificial neural networks, \textbf{learning} involves changing its internal state by updating its parameters to accomplish a goal within the constraints set by a special function, called the objective function. This corresponds to decreasing the dissimilarity between the neural network's output representations and some ideal target representations. With the introduction of NNs for tackling specific tasks, many learning paradigms have been developed, the two most common being supervised learning and unsupervised learning.
+
+\textbf{Supervised learning} entails that the network has access to labelled data, where the expected result for each input is known. The purpose of supervised learning is to develop a function that, given labelled data, can map inputs to outputs. This function may then be used to forecast or categorize previously unknown data. Regression, where the objective is to predict a continuous output variable, and classification, where the goal is to predict a categorical output variable, are two common instances of supervised learning.
+
+\textbf{Unsupervised learning}, on the other hand, is concerned with neural networks that uses unlabeled data, where the desired outcome for each input is unknown. The purpose of unsupervised learning is to discover patterns and correlations in input data without the use of tagged data. Unsupervised learning examples include clustering, which aims to group similar data points, and dimensionality reduction, which strives to minimize the number of features in the input data while maintaining as much information as possible. The process for learning such representations entails imposing external constraints on the output such that similitude is preserved after the network's transformation.
+
+We will concentrate our attention on supervised methodology, thus our main goal is to update the network's weights to better approximate the mapping function between the input and output variables. To be able to do so, we need to define a quantifiable measure that will tell us the discrepancy between the predicted output and the true target values. This distance-like set of measures bears the name of \textbf{loss} functions (or simply losses), also known as cost or objective functions. Let $\symbf{x}$ be the input vector, $\symbf{y}$ the ground truth output vector and $\symbf{\hat{y}}$ the neural network's output vector, then we denote the loss function as the expression $\mathcal{L} = \mathcal{L}\left( \symbf{y}, \symbf{\hat{y}} \right)$. Furthermore, we can compute $\symbf{\hat{y}}$ by passing the input data $\symbf{x}$ through the network's layers and applying the associated activation functions, an operation called \textbf{forward propagation}. In a feedforward neural network, the output of each layer serves as the input for the next layer, so the forward propagation process can be summarised using the following equations:
+\begin{equation}
+    \begin{cases}
+        \symbf{h}^{(i)} = \symbf{x}                                                                     & \text{if} \ i = 0            \\
+        \symbf{h}^{(i)} = \Phi^{(i)}(\symbf{W}^{(i)} \cdot\symbf{h}^{(i-1)} + \symbf{b}^{(i)})                & \text{if} \ i \in [1, L - 1] \\
+        \symbf{\hat{y}} = \symbf{h}^{(i)} = \Phi^{(i)}(\symbf{W}^{(i)} \cdot\symbf{h}^{(i-1)} + \symbf{b}^{(i)}) & \text{if} \ i = L\,,
+    \end{cases}
+\end{equation}
+\noindent where $L$ is the number of functional layers (i.e. the input layer is not considered), the output layer being the $L^\text{th}$ one, and $\symbf{W}^{(i)}$, $\symbf{b}^{(i)}$, $\symbf{h}^{(i)}$ and $\Phi^{(i)}$ is the weight matrix, biases vector, output and activation function of the $i^\text{th}$ layer, respectively. Thus, the loss can be rewritten as a function of the network's internal parameters $\symbf{W}^{(i)}$ and $\symbf{b}^{(i)}$, given the expression of each activation functions of each layer.
+
+The network's weights must be optimised through a process known as \textbf{training} that entails minimising the overall loss in order to achieve a more suitable mapping function. The training process of a neural network iteratively updates the model's parameters. To optimise the model's weights, a technique called \textbf{backpropagation} is employed, which calculates the gradients of the loss function with respect to each weight by applying the chain rule for derivatives. Backpropagation essentially computes the error signal for each neuron in the network, starting from the output layer and propagating backwards to the input layer. This method has been the de facto standard algorithm for some time when it comes to training neural networks~\supercite{backprop1,backprop2}. To be able to encompass all the available data pairs $\left( \symbf{y}_k, \symbf{\hat{y}}_k \right)$ in the training process, we define the total loss function
+\begin{equation}
+    \mathcal{L}_{\text{total}} = \dfrac{1}{T} \sum\limits_{k = 1}^{T} \mathcal{L}_k\,,
+\end{equation}
+\noindent where $\mathcal{L}_k = \mathcal{L}\left( \symbf{y}_k, \symbf{\hat{y}}_k \right)$ and $T$ is the number of training examples. Once the gradients of this loss are obtained, an optimisation algorithm updates the weights and biases based on these gradients. Moving forward, we define the following: $\theta$ represents the model's parameter (i.e. the weight $w_{j,p}^{(i)}$ or the bias $b_j^{(i)}$), $t$ denotes the iteration, $\eta \in (0, 1]$ is the \textbf{hyperparameter} (non-trainable) \textbf{learning rate} and $\varepsilon$ is a minuscule positive constant (roughly $\varepsilon \in [10^{-8}, 10^{-6}]$) to ensure numerical stability and prevent issues arising from division by very small numbers or even zero. Among the most popular \textbf{optimisation algorithms} are:
+\newcommand{\weight}{\theta}
+\newcommand{\lrdelta}[2]{\eta\cdot \partderiv{#1}{#2}}
+\newcommand{\deriv}{\partderiv{\mathcal{L}^{[b]}}{\weight_{t}}}
+\vspace{0.25cm}
+\begin{itemize}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+
+    \item\textbf{Gradient Descent} (GD) is a first-order optimisation algorithm and works iteratively by updating the model's parameters in the direction of the negative gradient of the loss function with respect to the parameters. It moves in the direction of the steepest descent by employing the partial derivative of the loss function calculated over the entire dataset. The update rule for each parameter can be described as follows:
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \lrdelta{\mathcal{L}_\text{total}}{\weight_{t}}\,.
+    \end{equation}
+    The advantages of GD include its simplicity, however, it has some disadvantages. First, the algorithm can be slow to converge, particularly when the loss function is ill-conditioned, meaning that the curvature of the function is not uniform in all directions, leading to local minima instead of global ones. Second, the computational complexity is high for large datasets, as the gradient must be computed for all samples at each iteration.
+
+    \item\textbf{Stochastic Gradient Descent} (SGD) is a variant of Gradient Descent that addresses the computational complexity issue by updating the model's parameters based on a single training sample at each iteration. The update rule for SGD is similar to that of Gradient Descent, but the gradient is computed using only one randomly chosen sample:
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \lrdelta{\mathcal{L}_k}{\weight_{t}}\,,\quad \forall k \in \left\{ 1, 2, \ldots, T \right\}\,.
+    \end{equation}
+    By using only one sample, the computational cost is reduced and the algorithm can converge faster. However, the trade-off is that the convergence is noisier, with the parameter updates being more erratic. This can, on the other hand, help escape local minima in non-convex optimisation problems. The main disadvantage is the noisy convergence, which can make it challenging to find an exact minimum, often requiring a decreasing learning rate schedule to improve convergence.
+
+    \item\textbf{Mini-Batch Gradient Descent} (MBGD) is a compromise between Gradient Descent and Stochastic Gradient Descent. It updates the model's parameters using a small batch of training samples instead of a single sample or the entire dataset. The update rule for Mini-Batch Gradient Descent is as follows:
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \lrdelta{\mathcal{L}^{[b]}}{\weight_{t}}\,,\quad \forall b \in \left\{ 1, 2, \ldots, B \right\}\,,
+    \end{equation}
+    where $B$ is a mini-batch containing a subset of training samples. MBGD combines the benefits of both GD and SGD, providing a balance between computational efficiency and convergence stability. It leverages the power of vectorised operations on modern hardware, such as GPUs, to process multiple samples simultaneously, leading to faster convergence. The main disadvantage is that the choice of the mini-batch size can be a critical hyperparameter, affecting both convergence speed and stability. This approach of computing the gradients will be employed for all following similar types of algorithms.
+
+    Furthermore, MBGD can be considered to be the general case of the two previously described algorithms, because when the mini-batch size is equal to the entire dataset, it becomes equivalent to Gradient Descent and when the mini-batch size is equal to one, it turns into Stochastic Gradient Descent.
+
+    \item\textbf{Gradient Descent with Momentum} is an extension of the standard Gradient Descent algorithm that aims to accelerate convergence and mitigate oscillations in the parameter updates. The key idea behind momentum-based methods is to incorporate a momentum term, which is a fraction of the previous weight update, into the current update. By doing so, the algorithm can accumulate velocity in consistent gradient directions while dampening oscillations in directions with alternating gradients. The algorithm has different implementations, so the most used update rule for Gradient Descent with Momentum can be described as follows:
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \eta\cdot v_{\weight_{t+1}}\,,
+    \end{equation}
+    \begin{equation}
+        v_{\weight_{t+1}} = \beta\cdot v_{\weight_{t}} + \left( 1 - \beta \right)\cdot \deriv\,,
+    \end{equation}
+    where $v_\theta$ is the velocity term and $\beta$ is the momentum coefficient (typically $\beta \in [0.8, 0.9]$). Advantages of Gradient Descent with Momentum include faster convergence and reduced oscillations compared to standard Gradient Descent, particularly in situations where the loss function has an ill-conditioned curvature or exhibits elongated valleys. By accumulating velocity in consistent gradient directions, the algorithm can traverse these valleys more efficiently and reach the optimal solution more quickly. Moreover, the momentum term can help the algorithm escape shallow local minima and saddle points, which can be particularly beneficial for non-convex optimisation problems encountered in deep learning.
+
+    Disadvantages of Gradient Descent with Momentum include the introduction of an additional hyperparameter, the momentum coefficient, which requires tuning for optimal performance. Furthermore, although the momentum term can help escape shallow local minima, it may also cause the algorithm to overshoot the optimal solution, especially if the learning rate is too high or the momentum coefficient is too large. Despite these disadvantages, it is often a preferred choice over standard Gradient Descent due to its improved convergence properties and robustness to various loss function shapes.
+
+    \item\textbf{AdaGrad}~\supercite{adagrad} (Adaptive Gradient Algorithm) is an adaptive learning rate optimisation algorithm designed to improve the convergence of gradient-based methods. The key idea behind AdaGrad is to adapt the learning rate for each parameter based on the history of gradients, allowing different learning rates for different parameters. The algorithm achieves this by maintaining a per-parameter sum of squared gradients and updating the learning rate for each parameter accordingly. The update rule for AdaGrad is as follows:
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \dfrac{\eta}{\sqrt{\mathcal{S}_{\weight_{t+1}}} + \varepsilon} \cdot\deriv\,,
+    \end{equation}
+    \begin{equation}
+        \mathcal{S}_{\weight_{t+1}} = \mathcal{S}_{\weight_{t}} + \left(\deriv\right)^2\,,
+    \end{equation}
+    where $\mathcal{S}_{\weight}$ represents the sum of squared gradients and is initialized with 0 for each parameter at the beginning of training. The main advantage of AdaGrad is its ability to handle sparse features and data with different scales effectively. By adapting the learning rate for each parameter, it can provide faster convergence for frequently occurring features and more conservative updates for less frequent features. This can be particularly useful in natural language processing and other tasks involving high-dimensional, sparse data.
+
+    Nevertheless, there are some disadvantages to AdaGrad. One of the main issues is the accumulation of squared gradients in the denominator, which can cause the learning rate to decrease too rapidly, leading to slow convergence or premature stopping before reaching an optimal solution. This effect is particularly problematic for deep learning tasks, where the number of training iterations can be quite large.
+
+    \item\textbf{Adam}~\supercite{adam} (Adaptive Moment Estimation) is an adaptive learning rate optimisation algorithm that combines the benefits of momentum-based optimisation and adaptive learning rate methods. The key idea behind Adam is to estimate both the first-order moment (mean) and the second-order moment (uncentered variance) of the gradients to adapt the learning rate for each parameter. This combination of momentum and adaptive learning rates allows Adam to achieve faster convergence and better performance than many other optimisation algorithms. The update rule for Adam can be described as follows:
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \eta\cdot \dfrac{\hat{m}_{\weight_{t+1}}}{\sqrt{\hat{v}_{\weight_{t+1}}} + \varepsilon}\,,
+    \end{equation}
+    \begin{equation}
+        \hat{m}_{\weight_{t+1}} = \dfrac{m_{\weight_{t+1}}}{1 - \beta_1^2} \quad \text{and} \quad m_{\weight_{t+1}} = \beta_1 \cdot m_{\weight_{t}} + (1 - \beta_1) \cdot \deriv\,,
+    \end{equation}
+    \begin{equation}
+        \hat{v}_{\weight_{t+1}} = \dfrac{v_{\weight_{t+1}}}{1 - \beta_2^2} \quad \text{and} \quad v_{\weight_{t+1}} = \beta_2 \cdot v_{\weight_{t}} + (1 - \beta_2) \cdot \left( \deriv \right) ^ 2\,,
+    \end{equation}
+    where $m$ and $v$ represent the first-order and second-order moment estimates, respectively and $\beta_1$ and $\beta_2$ are the decay rates for the moment estimates. Usually, $\beta_1$ is initialized to $0.9$ and $\beta_2$ to $0.999$, while the estimates are always initialized to $0$ for every parameter. The advantages of Adam include its fast convergence and robustness to various types of data and model architectures. Additionally, it requires minimal tuning of its hyperparameters.
+
+    However, one disadvantage of Adam is that it can sometimes exhibit undesirable convergence properties, such as overshooting the optimal solution or displaying high variance in parameter updates. Consequently, AMSGrad~\supercite{amsgrad} is an updated version of the Adam optimisation algorithm that aims to address the convergence issues found in the original Adam algorithm by introducing a new update rule for the second-order moment estimate that ensures the maximum of all past squared gradients is always used. This modification prevents the learning rate from increasing and provides more stable convergence. The update rule for AMSGrad is as follows:
+    \begin{equation}
+        \hat{v}_{\weight_\text{max}} = \max{\left(\hat{v}_{\weight_{t+1}},\ \hat{v}_{\weight_\text{max}}\right)}\,,
+    \end{equation}
+    \begin{equation}
+        \weight_{t+1} = \weight_{t} - \eta\cdot \dfrac{\hat{m}_{\weight_{t+1}}}{\sqrt{\hat{v}_{\weight_\text{max}}} + \varepsilon}\,.
+    \end{equation}
+    The main advantage of AMSGrad is that it provides improved convergence properties compared to the original Adam algorithm, particularly for non-convex optimisation problems. By using the maximum of past squared gradients, AMSGrad ensures more stable parameter updates and reduces the risk of overshooting the optimal solution. However, AMSGrad may exhibit slower convergence in certain situations compared to Adam.
+    \item\textbf{Other} gradient-based optimisation techniques include Adadelta~\supercite{adadelta}, NAdam~\supercite{nadam}, AdamW~\supercite{adamw}, RMSProp~\supercite{rmsprop} and even more recent ones like Evolved Sign Momentum (Lion)~\supercite{lion}. Apart from these, there are numerous other optimisation algorithms that have been developed to address specific challenges or offer alternative approaches to model training. These include but are not limited to conjugate gradient methods, quasi-Newton methods (e.g. Broyden–Fletcher–Goldfarb–Shanno (BFGS) and Limited-memory BFGS (L-BFGS)~\supercite{bfgs} and evolutionary algorithms (e.g. Genetic Algorithms, Particle Swarm Optimisation and Differential Evolution)~\supercite{genetic}. Some of these algorithms are gradient-based, leveraging gradient information to guide the search for optimal solutions, while others are gradient-free, relying on heuristics or sampling techniques to explore the search space.
+\end{itemize}
+\vspace{1em}
+
+In the realm of deep learning, a multitude of activation functions exist, each with its unique properties and characteristics. The chosen function depends on the specific problem, the model architecture and the desired trade-offs in terms of computational complexity, learning speed and nonlinearity. While the range of available activation functions is vast, we will focus on the most commonly used and well-established activation functions as they are presented in \autoref{table:activations}. The binary step is a simple threshold-based function that activates the neuron if the input exceeds zero, providing a basic on-off switch. The sigmoid function is a smooth, S-shaped curve that maps input values to the range $(0, 1)$, enabling probabilistic interpretation for binary classification and gradient-based learning. The hyperbolic tangent function is similar to the sigmoid function, but it maps input values to the range $(-1, 1)$, providing a more balanced output with stronger gradients for learning. Rectified Linear Unit (ReLU)~\supercite{relu} is a piecewise linear function that outputs the input value if it is positive and zero otherwise, offering computational efficiency and mitigating the vanishing gradient problem. Leaky ReLU~\supercite{leakyrelu} addresses the \textit{dying ReLU}~\supercite{dyingrelu} issue, where some neurons may become inactive, by introducing a small slope for negative input values, thus maintaining a non-zero gradient. Exponential Linear Unit (ELU)~\supercite{elu} improves upon ReLU and Leaky ReLU by providing a smooth, non-linear curve for negative input values, ensuring a non-zero gradient and reducing the vanishing gradient problem. Scaled Exponential Linear Unit (SELU)~\supercite{selu} is a self-normalising activation function that combines the benefits of ELU with an automatic normalisation of activations, leading to improved convergence and generalisation. There is also the Softmax activation function which typically is used in the output layer of a neural network for multi-class classification problems, extending the sigmoid function. It maps a vector of input values (logits) to a probability distribution over the possible classes. The function is defined as follows:
+\begin{equation}
+    \operatorname{Softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^k e^{z_j}}\,,\quad \forall i \in \left\{ 1, 2, \ldots, k \right\}  \,,
+\end{equation}
+where $x_i$ is the $i^\text{th}$ component of the input vector and $k$ is the number of classes. Softmax ensures that the sum of the probabilities for all classes is equal to $1$, allowing for interpretable class probabilities and easier decision-making.
+
+Training a neural network involves numerous challenges and potential pitfalls that can affect the performance and generalisation capabilities of the model. Among the most common issues encountered during the training process are overfitting, underfitting, vanishing gradients and exploding gradients. In the following paragraphs, we delve deeper into each of these issues, elaborating on their origins, consequences and mitigation strategies.
+
+\newcommand{\binary}{\makecell{$\Phi \colon \mathbb{R} \to \{ 0, 1 \}$\\[0.5em]$\Phi(x) = \begin{cases}
+                0 & \text{if}\ x < 0   \\
+                1 & \text{if}\ x \ge 0
+            \end{cases}$}}
+\newcommand{\sigmoid}{\makecell{$\Phi \colon \mathbb{R} \to (0, 1)$\\[0.5em]$\Phi(x) = \dfrac{1}{1 + e^{-x}}$}}
+\newcommand{\htangent}{\makecell{$\Phi \colon \mathbb{R} \to (-1, 1)$\\[0.5em]$\Phi(x) = \dfrac{e^x - e^{-x}}{e^x + e^{-x}}$}}
+\newcommand{\relu}{\makecell{$\Phi \colon \mathbb{R} \to [0, \infty)$\\[0.5em]$\Phi(x) =
+        \begin{cases}
+            0 & \text{if}\ x < 0   \\
+            x & \text{if}\ x \ge 0
+        \end{cases}$}}
+\newcommand{\lrelu}{\makecell{$\Phi \colon \mathbb{R} \to (-\infty, \infty)$\\[0.2em]$\Phi(x) =
+            \begin{cases}
+                \alpha x & \text{if}\ x < 0   \\
+                x        & \text{if}\ x \ge 0
+            \end{cases}$\\[1em]$\alpha \in (0, 1) $}}
+\newcommand{\elu}{\makecell{$\Phi \colon \mathbb{R} \to (-\alpha, \infty)$\\[0.2em]$\Phi(x) =
+            \begin{cases}
+                \alpha \left( e^x - 1 \right) & \text{if}\ x < 0   \\
+                x                             & \text{if}\ x \ge 0
+            \end{cases}$\\[1em]$\alpha \in \mathbb{R} $}}
+\newcommand{\selu}{\makecell{$\Phi \colon \mathbb{R} \to (-\lambda\alpha, \infty)$\\[0.2em]$\Phi(x) =
+            \begin{cases}
+                \lambda\alpha \left( e^x - 1 \right) & \text{if}\ x < 0   \\
+                \lambda x                            & \text{if}\ x \ge 0
+            \end{cases}$\\[1em]$\lambda\,, \alpha \in \mathbb{R}$}}
+
+\newcommand{\tablefig}[1]{\parbox[c]{4cm}{\includegraphics[width=4cm]{#1}}}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{c|c|c}
+        \textbf{Name}      & \textbf{Function} & \textbf{Graph}                                 \\ \hhline{=|=|=}
+        Binary step        & \binary           & \tablefig{theoretical-aspects/binary_step.pdf} \\  \hline
+        Sigmoid (Logistic) & \sigmoid          & \tablefig{theoretical-aspects/sigmoid.pdf}     \\ \hline
+        Hyperbolic Tangent & \htangent         & \tablefig{theoretical-aspects/tanh.pdf}        \\ \hline
+        \makecell{Rectified Linear                                                              \\Unit (ReLU)}          & \relu         & \tablefig{theoretical-aspects/relu.pdf}          \\ \hline
+        \makecell{Leaky Rectified Linear                                                        \\Unit (Leaky ReLU)}          & \lrelu          & \tablefig{theoretical-aspects/leaky_relu.pdf} \\ \hline
+        \makecell{Exponential Linear                                                            \\Unit (ELU)} & \elu & \tablefig{theoretical-aspects/elu.pdf} \\ \hline
+        \makecell{Scaled Exponential                                                            \\Linear Unit (SELU)} & \selu & \tablefig{theoretical-aspects/selu.pdf}
+    \end{tabular}
+    \caption{Representative activation functions}
+    \label{table:activations}
+\end{table}
+
+\textbf{Overfitting} is a prevalent issue in machine learning, particularly in deep learning, where models with a large number of parameters are prone to capturing noise or idiosyncrasies in the training data. This leads to excellent performance on the training data but poor generalisation of unseen data. Several factors contribute to overfitting, such as insufficient or unrepresentative training data, a complex model architecture with excessive parameters, or inadequate regularisation. To prevent overfitting, regularisation techniques can be applied or another used popular strategy is dropout~\supercite{dropout}. Increasing the size and diversity of the training data, employing data augmentation techniques~\supercite{augmentation}, or simplifying the model architecture by reducing the number of layers or neurons can also help combat overfitting and improve the model's generalisation capabilities.
+
+\textbf{Underfitting} arises when a neural network is unable to capture the true underlying patterns in the data, resulting in subpar performance on both training and validation datasets. The primary causes of underfitting include an overly simplistic model architecture, inadequate training time, or improper selection of hyperparameters such as the learning rate, batch size, or optimisation algorithm. To address underfitting, one can increase the model complexity by adding more layers or neurons, allowing the model to learn more expressive features. Training the model for a longer duration or with more advanced optimisation algorithms can also help improve learning. Tuning the hyperparameters, such as using grid search, can assist in finding the optimal combination that yields the best performance.
+
+The \textbf{vanishing gradient} problem is a common challenge in deep learning, particularly in deep feedforward neural networks. As the gradients are backpropagated through the layers, they can become exceedingly small, resulting in minimal weight updates and slow or stalled learning. Activation functions, such as the sigmoid or tanh, which have saturating regions producing small gradients for large input values, are especially prone to vanishing gradients. To mitigate this issue, alternative activation functions, such as ReLU, Leaky ReLU or ELU, can be used, as they provide non-saturating non-linear transformations and maintain larger gradients for learning. Additionally, employing techniques like batch normalization~\supercite{batchnorm1,batchnorm2,batchnorm3}, which normalises the input distribution at each layer, can help maintain a healthy gradient flow. Proper weight initialization schemes, such as Glorot~\supercite{glorot-init} or He~\supercite{he-init} initialization, can also aid in avoiding vanishing gradients by providing an appropriate starting point for the training process. Finally, introducing skip connections, as seen in residual networks~\supercite{residuals1,residuals2}, can allow gradients to bypass certain layers, preserving the gradient magnitude and enabling more efficient learning.
+
+\textbf{Exploding gradients} pose a significant challenge during the training of neural networks, especially in recurrent architectures dealing with long sequences. When gradients become excessively large during backpropagation, they can cause weight updates to be highly unstable, leading to oscillations or divergence in the training process. In some cases, exploding gradients can also result in numerical instability, causing the learning algorithm to fail completely. To tackle the exploding gradient issue, one widely adopted approach is gradient clipping, which involves limiting the magnitude of the gradients to a predefined threshold before updating the weights. This prevents excessively large weight updates and maintains stability during training. Proper weight initialization can also play a role in controlling the magnitude of gradients, as it can help prevent extreme weight values and gradient accumulation in the early stages of training. Regularisation techniques, such as weight decay or dropout, can further contribute to reducing the risk of exploding gradients by encouraging smoother and more stable weight updates throughout the training process.
+
+\textbf{Regularisation} techniques play a crucial role in preventing overfitting and improving generalisation capabilities. By adding constraints or penalties to the model's complexity, regularisation encourages the learning algorithm to find simpler and more robust solutions, striking a balance between fitting the training data and maintaining adaptability to unseen data. Prevalent regularisation methods include:
+\vspace{0.25cm}
+\begin{itemize}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+    \item \textbf{Lasso ($\symbf{\ell_1}$) Regularisation} is a technique used to prevent overfitting by adding a penalty term to the loss function based on the absolute values of the model weights. This penalty term encourages the model to learn a sparse set of features, effectively setting some of the less important weights to zero. The modified loss function with $\ell_1$ regularisation can be written as:
+          \begin{equation}
+              \mathcal{L}_{\ell_1} = \mathcal{L} + \lambda\sum\limits_{i=1}^{L}\norm*{\symbf{W}^{(i)}}_1 + \lambda\sum\limits_{i=1}^{L}\norm*{\symbf{b}^{(i)}}_1\,,
+          \end{equation}
+          \begin{equation}
+              \norm*{\symbf{W}^{(i)}}_1 = \dfrac{1}{R_i \cdot C_i} \sum\limits_{j=1}^{R_i} \sum\limits_{p=1}^{C_i} \left| w_{j,p}^{(i)} \right|
+              \quad \text{and} \quad
+              \norm*{\symbf{b}^{(i)}}_1 = \dfrac{1}{R_i} \sum\limits_{j=1}^{R_i} \left| b_{j}^{(i)} \right|\,,
+          \end{equation}
+          where $\lambda$ is the regularisation coefficient hyperparameter and $R_i \stimes C_i$ is the size of the weight matrix $\symbf{W}^{(i)}$. By adjusting the value of $\lambda$, one can balance the trade-off between fitting the data and enforcing sparsity in the model weights. Lasso regularisation can be particularly beneficial in situations where the input features are highly correlated or when there are more features than training examples, as it promotes feature selection and simplifies the model, thus improving generalisation.
+
+    \item \textbf{Ridge ($\symbf{\ell_2}$) Regularisation} or weight decay is another technique used to prevent overfitting by adding a penalty term to the loss function based on the squared values of the model weights. Unlike $\ell_1$ regularisation, which enforces sparsity, $\ell_2$ regularisation encourages the model to distribute the weights more evenly across the features, resulting in smaller weight values and a smoother model. The modified loss function with $\ell_2$ regularisation can be written as:
+          \begin{equation}
+              \mathcal{L}_{\ell_2} = \mathcal{L} + \lambda\sum\limits_{i=1}^{L}\norm*{\symbf{W}^{(i)}}_2 + \lambda\sum\limits_{i=1}^{L}\norm*{\symbf{b}^{(i)}}_2 \,,
+          \end{equation}
+          \begin{equation}
+              \norm*{\symbf{W}^{(i)}}_2 = \dfrac{1}{R_i \cdot C_i} \sum\limits_{j=1}^{R_i} \sum\limits_{p=1}^{C_i} \left( w_{j,p}^{(i)} \right)^2
+              \quad \text{and} \quad
+              \norm*{\symbf{b}^{(i)}}_2 = \dfrac{1}{R_i} \sum\limits_{j=1}^{R_i} \left( b_{j}^{(i)} \right)^2 \,.
+          \end{equation}
+          By varying the value of $\lambda$, one can balance the trade-off between fitting the data and enforcing smoothness in the model weights. Ridge regularisation is particularly effective in situations where there is a risk of multicollinearity or when the model is prone to overfitting, as it penalises large weights and helps to reduce the complexity of the model, thus enhancing its generalisation capabilities.
+
+    \item \textbf{Dropout} is a powerful regularisation technique introduced to address overfitting in deep neural networks. Dropout works by randomly deactivating a subset of neurons (along with their connections) during each training iteration, with the probability of deactivation controlled by a hyperparameter, usually denoted as the dropout rate. By doing so, dropout effectively creates an ensemble of smaller, varied sub-networks, each of which learns different aspects of the data. Meanwhile, during the testing or inference phase, all neurons are active.
+
+          Dropout provides several key advantages for training deep learning models. First, it prevents the model from relying too heavily on individual neurons or features, thus promoting better generalisation and robustness. Second, by creating an ensemble of sub-networks, dropout implicitly performs model averaging, which has been shown to improve generalisation performance in various tasks. Third, dropout serves as a computationally efficient form of regularisation, as it requires minimal additional computational resources during training and does not introduce any additional parameters to the model.
+
+          One potential drawback of dropout is that it may increase the training time, as the model must learn to compensate for the random deactivation of neurons. However, this additional training time is often offset by the improved generalisation performance and robustness that dropout brings to the model, making it a widely adopted and valuable regularisation technique in deep learning.
+
+    \item \textbf{Early stopping} involves monitoring the model's performance on a validation dataset during the training process and terminating the training when the validation performance ceases to improve or starts to degrade. By stopping the training early, one can prevent the model from overfitting the training data and fine-tuning to the noise present in the training samples, thus preserving the model's generalisation capabilities. Early stopping effectively balances the trade-off between underfitting and overfitting by finding the optimal point at which the model performs well on both the training and validation datasets. In practice, early stopping is often combined with other regularisation techniques.
+\end{itemize}
+\vspace{1em}
+
+In the domain of neural networks, various \textbf{performance metrics} have been developed to evaluate the effectiveness of models in classification tasks, such as accuracy, precision, recall and F1 score. These metrics provide insights into the model's ability to correctly predict class labels and discern between different classes. However, our current focus is on a regression problem, specifically, the task of inpainting degraded colour images, which requires estimating continuous values rather than predicting discrete class labels. Therefore, in the following section, we will shift our attention to Convolutional Neural Networks (CNNs), a powerful class of deep learning models particularly suited for handling image data.
+
+% ----------------------------------------
+\numberedsection{Convolutional Neural Networks}\label{section:cnn}
+
+\textbf{Convolutional Neural Networks} (CNNs) are a class of deep learning models that are specifically designed to process grid-like data structures, such as images, by capturing and exploiting the spatial hierarchies and local patterns intrinsic in such data. CNNs have shown remarkable success in various applications, including image classification, object detection, semantic segmentation and image inpainting, among others. The architecture of a Convolutional Neural Network is characterised by a series of layers, each responsible for learning different levels of abstraction from the input data. The layers typically include convolutional layers, pooling layers and fully connected layers, arranged in a sequential manner.
+
+\textbf{Convolutional layers} are the core building blocks of CNNs, designed to detect local patterns or features in input data, such as images. These layers perform the operation of convolution, which involves applying a set of trainable filters or convolutional kernels to the input data in a sliding window fashion. Each filter in a convolutional layer is typically a small matrix with fixed dimensions, commonly equal to each other (e.g. $3 \stimes 3$, $5 \stimes 5$), and is applied to a local receptive field of the input. By sliding the filter across the input spatially in both width and height dimensions, Hadamard product (i.e. element-wise multiplication) and summation are performed between the filter and the receptive field. The resulting sum is stored in a corresponding location in the output feature map. This process is repeated for all possible positions of the filter in the input, generating the complete output feature map for that specific filter, as can be seen in \autoref{fig:conv1}. Convolutional layers typically contain multiple filters, enabling them to learn a variety of features or patterns from the input data. Each filter produces its own output feature map, which, when combined, forms a multi-channel output, encoding different aspects of the input data's spatial and structural information.
+
+Several key properties, such as padding and stride, can be adjusted to control the behaviour of the convolutional layer. \textbf{Padding} refers to the process of augmenting the input data's borders with additional values, which allows for control over the output feature map's spatial dimensions and better preservation of information at the edges. The values added during padding can be determined by various methods (e.g. adding zeros, repeating or reflecting existing values), depending on the specific requirements of the task at hand. \textbf{Stride} determines the step size by which the filter moves across the input, with larger strides resulting in smaller output feature maps.
+
+\textbf{Dilated convolutional layers}, also known as atrous convolutions, are a variant of standard convolutional layers that incorporate a dilation factor to control the spacing between the filter's elements. This modification allows the receptive field to be larger without increasing the number of parameters in the filter, enabling the network to capture and integrate information from a wider spatial context without a significant increase in computational complexity, as observed in \autoref{fig:conv2}. In a dilated convolutional layer, each element of the filter is separated by a gap of size $d-1$, where $d \in \mathbb{N}^{\ast}$ is the dilation factor. A dilation factor of $1$ corresponds to a standard convolution, while a dilation factor greater than $1$ results in an expanded receptive field. Dilated convolutions are particularly useful in tasks that require the integration of information from larger spatial contexts, such as semantic segmentation or image inpainting. They enable the network to capture multi-scale information without the need for pooling layers or multiple parallel convolutional pathways. Moreover, dilated convolutions can be employed in conjunction with standard convolutions in deep architectures, allowing the network to learn features at different scales and resolutions. However, one potential drawback of dilated convolutions is the increase in computational complexity for larger dilation factors, as the expanded receptive field may require additional memory and processing resources.
+\begin{figure}[ht]
+    \centering
+    \captionsetup[subfigure]{justification=centering}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{theoretical-aspects/conv1.pdf}
+        \caption{\emph{Normal convolution} with a $5 \stimes 5$ kernel at a stride of $1$ on an $1$-padded matrix}
+        \label{fig:conv1}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{theoretical-aspects/conv2.pdf}
+        \caption{\emph{Dilated convolution} with a $2$-dilated $3 \stimes 3$ kernel at a stride of $1$ on an $1$-padded matrix}
+        \label{fig:conv2}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.32\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{theoretical-aspects/conv3.pdf}
+        \caption{\emph{Transposed convolution} with a 5x5 kernel at a stride of 2 on an 2-padded matrix}
+        \label{fig:conv3}
+    \end{subfigure}
+
+    \caption[Comparison of convolutional operations]{Comparison of convolutional operations~\supercite{conv-guide}}
+    \label{fig:convolutions}
+\end{figure}
+
+Now let us consider the case of multiple-layer images as the input $\mathcal{I} \in \mathbb{R}^{H_{\text{in}} \stimes W_{\text{in}} \stimes L_{\text{in}}}$ for a convolutional layer, where $H_{\text{in}}$, $W_{\text{in}}$ and $L_{\text{in}}$ represent the height, width and number of layers, respectively. For a 2D convolution (i.e. computed along the first two dimensions), we define the kernel $\mathcal{K} \in \mathbb{R}^{H_{\text{ker}} \stimes W_{\text{ker}} \stimes L_{\text{ker}}}$, where $H_{\text{ker}}$, $W_{\text{ker}}$ and $L_{\text{ker}}$ are its width, height and number of filters, respectively, and in most cases $H_{\text{ker}} \ll H_{\text{in}}$ and $W_{\text{ker}} \ll W_{\text{in}}$. Likewise, let the pairs of constants $(s_r, s_c)$ and $(d_r, d_c)$ represent the strides and dilation factors for the two axes or directions, respectively. Therefore, the general convolution operation can be represented mathematically as follows:
+\begin{equation}
+    \mathcal{O}(r, c) = \left( \mathcal{K} \ast \mathcal{I} \right)\!(r, c) =
+    \sum\limits_{ \scalemath{\convscale}{ i=-\floor*{\dfrac{H_{\text{ker}}}{2}} } }^{ \scalemath{\convscale}{ \floor*{\dfrac{H_{\text{ker}}}{2}} } }
+    \sum\limits_{ \scalemath{\convscale}{ j=-\floor*{\dfrac{W_{\text{ker}}}{2}} } }^{ \scalemath{\convscale}{ \floor*{\dfrac{W_{\text{ker}}}{2}} } } \,
+    \sum\limits_{k=1}^{L_{\text{in}}}
+    \mathcal{K}(i,j,k) \cdot  \mathcal{I}(s_r \cdot r + d_r \cdot i, s_c \cdot c + d_c \cdot j, k) \,,
+\end{equation}
+\begin{equation}
+    \forall r \in \left\{ 1, 2, \ldots, \ceil*{\dfrac{H_{\text{in}}}{s_r}} \right\}
+    \quad \text{and} \quad
+    \forall c \in \left\{ 1, 2, \ldots, \ceil*{\dfrac{W_{\text{in}}}{s_c}} \right\} \,. \label{eq:conv-index}
+\end{equation}
+\noindent On top of that, the aforementioned padding, defined by the pair of constants $(p_r, p_c)$ for the two axes, is employed to supplement the image borders with additional values, ensuring that the convolutional filter can be applied on the pixels situated along the image's boundary. Consequently, after the convolution has been applied, the output $\mathcal{O} \in \mathbb{R}^{ H_{\text{out}} \stimes W_{\text{out}} \stimes L_{\text{out}} }$ contains a number of $L_{\text{out}} = L_{\text{ker}}$ layers and the shape $H_{\text{out}} \stimes W_{\text{out}}$ is computed by the ensuing equations:
+\begin{equation}
+    H_{\text{out}} = \floor*{\dfrac{ H_{\text{in}} + 2 \cdot p_r - (H_{\text{ker}} - 1) \cdot d_r - 1 }{ s_r } } + 1 \,,
+\end{equation}
+\begin{equation}
+    W_{\text{out}} = \floor*{\dfrac{ W_{\text{in}} + 2 \cdot p_c - (W_{\text{ker}} - 1) \cdot d_c - 1 }{ s_c } } + 1 \,.
+\end{equation}
+
+\textbf{Transposed convolution} or \textbf{fractionally-strided convolution} is a crucial operation in deep learning for up-sampling or expanding feature maps. The term \textit{deconvolution} is also used to refer to this operation but is somewhat of a misnomer because is not a true deconvolution in the mathematical sense, as it does not reverse the process of convolution. This operation essentially reverses the forward and backward passes of a standard convolution process to reconstruct high-resolution feature maps from lower-resolution representations and aids in recovering spatial information lost during convolution and pooling operations, as depicted in \autoref{fig:conv3}~\supercite{deconv}. One of the primary benefits of transposed convolution is spatial expansion. This characteristic enables the expansion of feature maps, which is beneficial for tasks that require high-resolution outputs. Additionally, transposed convolution layers can restore spatial information lost during the compression process in convolutional neural networks, resulting in more accurate and detailed output images or feature maps.
+
+\textbf{Gated convolutional layers} are a variant of standard convolutional layers that incorporate gating mechanisms to control the flow of information through the network. These gating mechanisms enable the model to selectively learn and propagate relevant features, improving the network's ability to capture complex dependencies and context in the input data. A gated convolutional layer typically consists of two parallel convolution operations: one for the standard feature map generation and another for learning the gating mask. The feature map is computed using any activation function $\Phi$ applied after the standard convolution operation, while the gating mask is obtained by applying a sigmoid activation function $\sigma$ to a separate convolution operation~\supercite{free-form-inpainting}, expressed mathematically as follows:
+\begin{equation}
+    \mathcal{O} = \Phi \left( \mathcal{K} \ast \mathcal{I} \right) \odot \sigma \left( \mathcal{G} * \mathcal{I} \right) \,,
+\end{equation}
+\noindent where $\mathcal{K}$ is any convolution kernel and $\mathcal{G}$ is a different gating kernel, while $\odot$ denotes the Hadamard product.
+
+\textbf{Pooling layers} are an essential component of CNNs, playing a crucial role in reducing the spatial dimensions of the feature maps, which helps improve computational efficiency, control model complexity and enhance the model's ability to capture translation-invariant features. Pooling layers perform a downsampling operation, aggregating information within (non-)overlapping local regions of the input feature map. The most common types of pooling operations are maximum pooling and average pooling and are illustrated in \autoref{fig:pooling}. \textbf{Maximum pooling} selects the max value within the local region, while \textbf{average pooling} computes the mean value, as outlined by the following mathematical formulae:
+\begin{equation}
+    \mathcal{P}_{\text{max}}(r,c) =
+    \max\limits_{0 \le i < H_{\text{p}}} \,
+    \max\limits_{0 \le j < W_{\text{p}}}
+    \mathcal{I}(s_r \cdot r + i, s_c \cdot c + j) \,,
+\end{equation}
+\begin{equation}
+    \mathcal{P}_{\text{avg}}(r,c) = \dfrac{1}{H_{\text{p}} \cdot W_{\text{p}}}
+    \sum\limits_{i=0}^{H_{\text{p}} - 1}
+    \sum\limits_{j=0}^{W_{\text{p}} - 1}
+    \mathcal{I}(s_r \cdot r + i, s_c \cdot c + j) \,,
+\end{equation}
+\noindent where $H_{\text{p}} \stimes W_{\text{p}}$ is the size of the filter and the pair $(r, c)$ takes values such as previously described in equation \eqref{eq:conv-index}. By summarizing the local information and reducing the spatial dimensions of the feature maps, pooling layers contribute to making the model more robust to small translations or deformations in the input data. This reduction in spatial dimensions also leads to a decrease in the number of parameters in succeeding layers, resulting in a more computationally efficient model with a lower risk of overfitting. However, one potential drawback of pooling layers is the loss of some spatial information due to the downsampling process.
+\begin{figure}[ht]
+    \centering
+    \captionsetup[subfigure]{justification=centering}
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{theoretical-aspects/max.pdf}
+        \caption{\emph{Maximum pooling} with a $2 \stimes 2$ sliding window at a stride of $2$}
+        \label{fig:maxpool}
+    \end{subfigure}
+    \hspace*{\fill}
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{theoretical-aspects/avg.pdf}
+        \caption{\emph{Average pooling} with a $2 \stimes 2$ sliding window at a stride of $2$}
+        \label{fig:avgpool}
+    \end{subfigure}
+    \caption[Comparison of pooling operations]{Comparison of pooling operations~\supercite{conv-guide}}
+    \label{fig:pooling}
+\end{figure}
+
+Convolutional Neural Networks exhibit a range of unique properties that enable them to excel in various applications, particularly those related to image and signal processing. These key attributes comprise local connectivity, parameter sharing and spatial or shift-invariance. The \textbf{local connectivity} property ensures that the network's neurons are connected to specific, limited regions within the input data. This approach reduces the total number of parameters and allows the network to extract local features more effectively. Furthermore, \textbf{parameter sharing} is a crucial characteristic of CNNs, as it involves using the same set of weights across multiple spatial locations in the input data. This technique not only contributes to a more efficient training process but also reduces the risk of overfitting. Lastly, the \textbf{spatial (shift) invariance} property instils the network with the ability to maintain robustness against translations in the input data. Consequently, it can recognise and generalise patterns irrespective of their position within the input space, thereby enhancing their performance in tasks such as object recognition and classification.
+
+% ----------------------------------------
+\numberedsection{Image Inpainting}\label{section:inpaint}
+
+\textbf{Image inpainting}, an essential and widely researched topic in the field of computer vision and image processing, refers to the technique of reconstructing missing or damaged regions within an image to preserve visual coherence and aesthetics. The primary goal of image inpainting is to restore an image in a manner that renders the filled regions indistinguishable from the original image, thus maintaining its structural, textural and semantic integrity. Inpainting techniques have numerous practical applications, such as restoring old or damaged photographs, removing unwanted objects or artefacts and filling in occlusions in panoramic images. The origins of image inpainting can be traced back to the domain of art conservation, wherein skilled artists and restorers manually retouch damaged paintings or photographs. In the digital era, researchers have developed various algorithmic approaches to automate the process of image inpainting, broadly categorized into two groups: non-learning-based methods and learning-based methods.
+
+\textbf{Non-learning-based methods}, also known as traditional or deterministic methods, rely on mathematical models and image priors to estimate the missing information. These techniques include diffusion-based methods and patch-based methods. \textbf{Diffusion-based methods} propagate information from the surrounding area into the missing region, primarily preserving the smoothness and structure of the image. In contrast, \textbf{patch-based methods} search for similar regions in the known image area and use them to synthesize the missing parts. Although these methods can achieve satisfactory results in certain scenarios, they may struggle with complex textures, fine details, or large missing regions.
+
+With the advent of deep learning, \textbf{learning-based methods} have emerged as a powerful alternative for image inpainting. These methods leverage the representation learning capabilities of neural networks to model complex patterns and relationships within images. Techniques such as Convolutional Neural Networks (CNNs), Generative Adversarial Networks (GANs) and Variational Autoencoders (VAEs) have shown remarkable success in various inpainting tasks \supercite{context-encoders, semanting-inpainting, context-inpainting, free-form-inpainting}. CNNs, for instance, can be trained to predict missing pixels based on the surrounding context, while GANs and VAEs can generate coherent and plausible image patches by learning the underlying distribution of the image data.
+
+In order to develop a more comprehensive understanding of the fundamental \textbf{technical principles} underlying image inpainting, it is essential to delve into several critical aspects that encompass the field's primary methodologies, techniques and approaches:
+\begin{itemize}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+
+    \item \textbf{Local and global consistency} -- A critical aspect is to maintain both local and global consistency in the reconstructed image. Local consistency refers to the coherence of textures, colours and patterns in the immediate vicinity of the missing region, while global consistency relates to the preservation of the image's overall structure and semantics. Achieving this balance is a challenging task, as it requires considering both the immediate surroundings and the broader context of the image.
+
+    \item \textbf{Non-local self-similarity} -- Natural images often exhibit a high degree of self-similarity and repetitive patterns. Non-local self-similarity refers to the observation that similar patches can be found in disparate regions of the image. Exploiting this property can facilitate the search for suitable candidates to fill the missing regions, particularly when using patch-based inpainting methods.
+
+    \item \textbf{Ill-posed nature} -- Image inpainting is inherently an ill-posed problem, as there are often multiple plausible solutions for a given missing region. The absence of a unique solution complicates the task, requiring the development of sophisticated algorithms capable of generating visually coherent and semantically consistent results.
+
+    \item \textbf{Handling diverse image characteristics} -- Images can possess a wide variety of characteristics, including different structures, textures and semantics. Developing inpainting algorithms that can effectively handle such diversity is challenging, as it requires accounting for the specific properties of each image and adapting the inpainting process accordingly.
+\end{itemize}
+
+In the following discussion, we will shed light on some of the prominent \textbf{challenges} that arise in the context of image inpainting, highlighting the complexities and obstacles that must be addressed to achieve effective and visually coherent results:
+\begin{itemize}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+
+    \item \textbf{Large missing regions} --  Inpainting algorithms may struggle with situations where the missing region is extensive, as the available information from the known region might be insufficient to accurately reconstruct the occluded area.
+
+    \item \textbf{Insufficient self-similarity} -- Some images may not exhibit sufficient self-similarity or repetitive patterns, making it challenging for patch-based methods to find suitable candidates for filling the missing regions.
+
+    \item \textbf{Complex textures and structures} -- Inpainting algorithms can face difficulties when dealing with complex textures and structures, as accurately reconstructing these features requires a high level of fidelity and coherence.
+
+    \item \textbf{Subjectivity in visual perception} -- The notion of visual similarity is often subjective, which complicates the task of evaluating the success of inpainting algorithms. Aiming to mimic human visual perception, inpainting methods must account for the nuances of human perception and generate results that are not only visually coherent but also semantically consistent.
+\end{itemize}
+
+Although substantial advancements have been made in recent years, image inpainting has always been a demanding endeavour owing to its ill-posed nature and the heterogeneous properties of images, including aspects such as texture, structure and semantics. Acknowledging the inherent challenges of image inpainting, three notable non-learning-based algorithms that have made significant contributions to the domain will be concisely presented.
+
+\unnumberedsubsection{Navier-Stokes}
+
+The \textbf{Navier-Stokes}~\supercite{navier-stokes} algorithm, also known as fluid-flow-based inpainting, is an image inpainting technique introduced in 2001. It is inspired by the principles of fluid dynamics and aims to reconstruct missing or corrupted regions in an image by propagating structural and textural information from the surrounding known areas. The algorithm operates by calculating the isophote (i.e. curves on an image that connect points of equal intensity or brightness) and Laplacian fields (i.e. spatial distribution of the second derivatives of an image, capturing its local curvature and edges) for the known regions of the image, which provide information about the structure and texture. It then uses the Navier-Stokes equations, which describe the motion of fluid substances, to model the propagation of these fields from the known region into the missing region.
+
+The fundamental approach is heuristic in nature. Initially, the process traverses along the edges from known to unknown regions, as edges are intended to be continuous. It maintains the isophotes while aligning gradient vectors at the boundary of the inpainting region. Afterwards, colour is introduced to minimize the variance within the given area. The inpainting process is iterative, with each iteration refining the reconstructed region to minimize discrepancies between the known and missing areas. The algorithm prioritizes the completion of image structure and edge information, which is achieved through the use of an edge-preserving smoothing technique, namely anisotropic diffusion.
+
+When employing the Navier-Stokes inpainting algorithm, several challenges may arise, affecting its performance and output quality. One notable issue is the algorithm's sensitivity to noise, which can result in the amplification of noise artefacts during the inpainting process. Furthermore, the method may struggle to handle complex textures and structures, often leading to less satisfactory reconstructions in such cases. Another challenge is the computational efficiency of the Navier-Stokes algorithm, as its iterative nature and reliance on solving partial differential equations can render it less suitable for large-scale or real-time inpainting applications.
+
+\unnumberedsubsection{Telea}
+
+The \textbf{Telea}~\supercite{telea} algorithm, developed by Alexandru Telea in 2004, is an image inpainting technique based on the fast-marching method. It aims to reconstruct missing or corrupted regions in an image by propagating information from the surrounding known areas. The algorithm prioritizes the completion of image structure and edge information. This method is founded upon the Fast Marching Method (i.e. numerical algorithm for solving the Eikonal equation, nonlinear partial differential equation describing the propagation of wavefronts, used for efficiently computing shortest paths or wavefront propagation).
+
+Given a region within an image to be inpainted, the algorithm commences at the region's boundary and progresses inwards, gradually filling the boundary first. It considers a small neighbourhood surrounding the pixel to be inpainted. This pixel is then substituted with a normalized weighted sum of all known pixels in the neighbourhood. The selection of weights is crucial, with the higher weight assigned to pixels closer to the point, proximate to the boundary's normal, and located on the boundary contours. Upon inpainting a pixel, the algorithm proceeds to the next nearest pixel using the Fast Marching Method. FMM ensures that pixels close to the known ones are inpainted first, emulating a manual heuristic operation.
+
+When using the Telea inpainting algorithm, certain challenges may arise that impact its performance and the quality of the generated results. One key limitation stems from its diffusion-based nature, which can lead to over-smoothing and the loss of intricate details in the inpainted regions. Moreover, the algorithm's local connectivity assumptions may hinder its ability to accurately propagate coherent structures and textures over larger distances or in cases where the missing region spans a significant portion of the image. Additionally, the selection of parameters, such as the neighbourhood's radius, can substantially influence the outcome, necessitating careful tuning to achieve optimal results.
+
+\unnumberedsubsection{PatchMatch}
+
+The \textbf{PatchMatch}~\supercite{patchmatch} algorithm, proposed in 2009, is an image inpainting technique that employs patch-based methods to reconstruct missing or corrupted regions in an image. The algorithm efficiently searches for approximate nearest-neighbour matches between patches in the image, enabling the synthesis of visually coherent and plausible results.
+
+The algorithm operates iteratively, commencing with the random initialization of an offset field, followed by a random search to identify better-matching patches. Subsequently, the best matching patches are propagated along a scanline order, enabling the efficient transfer of information across the image. Lastly, after a number of an empirically determined number of interactions, the best matching patches are blended to inpaint the missing region, producing a visually consistent reconstruction. The PatchMatch algorithm has been pivotal in the development of patch-based inpainting techniques, as it offers an efficient means of searching and propagating information while generating visually coherent outcomes.
+
+In the context of employing the PatchMatch inpainting algorithm, various challenges may emerge, affecting its efficacy and the quality of the resulting inpainted images. One primary concern is the algorithm's computational complexity, which may limit its applicability in large-scale or real-time applications. Additionally, the tuning of parameters, such as patch size and search radius, can significantly impact the output quality, requiring careful adjustment to achieve desired results. Furthermore, the PatchMatch algorithm may encounter difficulties in handling artefacts and discontinuities, leading to the generation of visually inconsistent or implausible reconstructions.

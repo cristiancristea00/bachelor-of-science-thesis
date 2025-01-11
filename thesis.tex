@@ -1,0 +1,93 @@
+\documentclass[]{etti-en}
+
+\SetToMultipleAdvisors
+\DoNotIncludeListOfAlgorithms
+\DoNotIncludeListOfSourceCodes
+
+\student{Cristian CRISTEA}
+\covertitle{Degraded colour images inpainting system using deep learning techniques}
+\pagetitle{Degraded colour images inpainting system using deep learning techniques}
+\domain{Computer Science and Information Technology}
+\programme{Information Engineering}
+\advisors{Asst. Prof. PhD. Eng. Ana Neacșu\\Prof. PhD. Eng. Corneliu Burileanu}
+\thesismonth{July}
+\thesisyear{2023}
+
+% \IncludeEnglishAppendixPage
+\topicfullstudent{CRISTEA A. Cristian}
+\topicgroup{421-ACES}
+\topicdescription{The proposed algorithm is designed to aid mountain rescue teams in detecting individuals under challenging conditions. By utilizing side-by-side thermal and visible-spectrum cameras mounted on unmanned aerial vehicles (UAVs), the system will scan designated areas, combining outputs from two inference models to minimize false positives and negatives. This approach aims to enhance detection reliability and improve rescue operations, particularly for locating non-compliant or lost individuals. The research involves several key stages. It begins with a review of state-of-the-art human detection techniques, followed by identifying neural networks capable of distinguishing humans and animals. Annotated datasets containing these classes will be explored to support training and evaluation. Neural networks will then be tested on video streams captured in varying conditions, such as day/night cycles, seasonal changes, and adverse weather, to assess and rank their performance. Environmental conditions will be inferred using thermal and visible data, enabling the development of an algorithm to reduce detection errors by dynamically adjusting to context, such as prioritizing thermal data at night. The project will conclude with an evaluation of the most effective networks across different hardware platforms, including GPUs and embedded devices like NVIDIA Orin and Xilinx Kria. This analysis will determine the computational demands of the algorithm and its suitability for real-world deployment.}
+\topiccourses{\textit{Fundamentals of Computer Vision and Machine Learning}, \textit{Software Development Process and Testing}, \textit{Performance Analysis and Optimisation}, and \textit{Reconfigurable Computing}}
+\topicresources{%
+    \begin{itemize}
+        \item \fullcite{speth2022deep}
+        \item \fullcite{krishnan2023fusion}
+        \item \fullcite{liu2025comparison}
+    \end{itemize}
+}
+\topicdirector{Lect. PhD. Eng. George-Vlăduț POPESCU}
+\topicdean{Prof. PhD. Eng. Mihnea UDREA}
+\topicdate{2024.12.28 06:46:39}
+\topicvalidation{73f046cc2b}
+
+% \IncludeRomanianAppendixPage
+\topicprogrammero{Calcul Avansat în Sisteme Încorporate}
+\topiccovertitlero{Algoritm de ultimă generație pentru detectarea oamenilor în imagini termice și din spectrul vizibil alăturate}
+\topicdescriptionro{Algoritmul propus este conceput pentru a sprijini echipele de salvare montană în detectarea persoanelor aflate în condiții dificile. Prin utilizarea unor camere termice și în spectrul vizibil montate pe vehicule aeriene fără pilot (UAV), sistemul va scana zonele desemnate, combinând rezultatele a două modele de inferență pentru a minimiza alarmele false și omisiunile. Această abordare urmărește să îmbunătățească fiabilitatea detectării și să optimizeze operațiunile de salvare, în special în cazul localizării persoanelor pierdute sau necooperante. Cercetarea implică mai multe etape cheie. Aceasta începe cu o analiză a celor mai avansate tehnici de detectare a persoanelor, urmată de identificarea rețelelor neuronale capabile să distingă între oameni și animale. Vor fi explorate seturi de date adnotate care conțin aceste clase pentru a sprijini antrenarea și evaluarea modelelor. Rețelele neuronale vor fi testate pe fluxuri video capturate în condiții variate, precum cicluri zi/noapte, schimbări sezoniere și condiții meteorologice nefavorabile, pentru a le evalua și clasifica performanța. Condițiile de mediu vor fi deduse utilizând date termice și din spectrul vizibil, ceea ce va permite dezvoltarea unui algoritm care să reducă erorile de detecție prin ajustări dinamice în funcție de context, de exemplu, acordând prioritate datelor termice pe timpul nopții. Proiectul se va încheia cu o evaluare a celor mai eficiente rețele pe diferite platforme hardware, inclusiv GPU-uri și dispozitive embedded precum NVIDIA Orin și Xilinx Kria. Această analiză va determina cerințele de calcul ale algoritmului și aplicabilitatea acestuia în scenarii reale.}
+\topiccoursesro{\textit{Introducere în Vedere Artificială și Sisteme de Învățare Automată}, \textit{Dezvoltare Software și Testare}, \textit{Analiza Performanțelor și Optimizare} și \textit{Calcul Reconfigurabil}}
+\topicresourcesro{%
+    \begin{itemize}
+        \item \fullcite{speth2022deep}
+        \item \fullcite{krishnan2023fusion}
+        \item \fullcite{liu2025comparison}
+    \end{itemize}
+}
+\topicadvisorsro{Conf. Dr. Ing. Călin BÎRĂ}
+\topicdirectorro{Ș.L. Dr. Ing. George-Vlăduț POPESCU}
+\topicdeanro{Prof. Dr. Ing. Mihnea UDREA}
+
+\IncludeCopyrightPage
+\copyrightentity{Cristian Cristea}
+
+\IncludeQuotationPage
+\quotationcontent{Per aspera ad astra}
+\quotationauthor{Lucius Annaeus Seneca}
+
+\addbibresource{references.bib}
+\addacronyms{acronyms.tex}
+
+\setpdflinks
+
+%%%%% CUSTOM SHIT %%%%%
+
+\graphicspath{{figures}}
+
+\newcommand\scalemath[2]{\scalebox{#1}{\mbox{\ensuremath{\displaystyle #2}}}}
+
+\newcommand{\stimes}{{\times}} % No spaces \times operator
+\newcommand{\partderiv}[2]{\dfrac{\partial #1}{\partial #2}} % Partial derivative
+\DeclarePairedDelimiter\norm{\lVert}{\rVert} % Norm operator
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil} % Ceil operator
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor} % Floor operator
+
+\newcommand{\convscale}{0.6}
+
+\begin{document}
+
+\beforecontent
+
+\input{sections/introduction}
+\input{sections/theoretical-aspects}
+\input{sections/state-of-the-art}
+\input{sections/preliminary-work}
+\input{sections/proposed-solutions}
+\input{sections/conclusions}
+
+\aftercontent
+
+\begin{appendices}
+    \input{sections/repo}
+    \input{sections/results}
+\end{appendices}
+
+\end{document}

@@ -1,0 +1,28 @@
+\unnumberedchapter{Conclusions}
+
+\unnumberedsection{Final Remarks}
+
+Image inpainting, as affirmed through this thesis, remains one of the challenging tasks within the domain of deep learning. Its complexity is underlined by the necessity for intricate pattern recognition, a high-level understanding of image structure and the subsequent generation of plausible and visually consistent content. This task's resource-intensive nature further accentuates its complexity, demanding extensive computational power and high-quality datasets to successfully develop and train models.
+
+In this examination, we navigated through these challenges by implementing two distinct neural network architectures: U-Net and ResNet. The choice of these architectures was inspired by their successful precedence in image-related tasks. Our exploration into these architectures was complemented by an analysis of their performance, yielding satisfactory results that contribute to our understanding of applying deep learning techniques to image inpainting.
+
+However, it is crucial to highlight that the boundary of this exploration was in part dictated by the available hardware. The performance and potential of deep learning models are closely tied to the computational power at their disposal. Therefore, the limitations of accessible hardware manifested as restrictions on the achievable complexity of the models and the speed of their training and testing processes.
+
+\unnumberedsection{Personal Contributions}
+
+In the course of completing this thesis, a multitude of personal contributions has been made, showcasing an engagement with the topic and the practical aspects of machine learning, image processing and deep learning techniques:
+\begin{itemize}[leftmargin=1.5em]
+    \setlength\itemsep{0.2cm}
+
+    \item Development and implementation of an efficient pre-processing pipeline, specifically designed to handle raw images extracted from two datasets, namely upscaled CIFAR-10 and COCO. This pipeline was created using various Python libraries such as \texttt{Numpy}, \texttt{Pillow}, \texttt{OpenCV}, \texttt{TensorFlow} and the native \texttt{multiprocessing} package. It ensured that the datasets were aptly and swiftly prepared for the subsequent stages of the project.
+
+    \item Research into existing image inpainting methodologies. This task entailed investigating relevant literature and technical studies to draw valuable insights and techniques, which were then incorporated into the core methodology of this project.
+
+    \item Designing and implementing the proposed deep learning architectures, U-Net and ResNet. The chosen architectures were motivated by their success in related applications, as indicated in the literature. These networks were brought to life using \texttt{TensorFlow}.
+
+    \item Careful orchestration of the training process for the proposed architectures. This entailed a cycle of choosing suitable loss functions, monitoring model performance across training epochs and an iterative process of hyperparameter tuning. Furthermore, the trained models' performance was assessed on the pre-processed datasets.
+\end{itemize}
+
+\unnumberedsection{Future Work}
+
+Future research directions offer several exciting possibilities. Firstly, exploring state-of-the-art network architectures, such as multi-stage ones that incorporate Generative Adversarial Networks, could refine the current model. While U-Net and ResNet have shown their worth, cutting-edge architectures are going to enhance the performance of the inpainting system. Secondly, adopting advanced loss functions might improve model accuracy. Despite the effectiveness of the current loss functions, adaptive ones could offer more precise reconstructions, making a significant impact on the system's performance. The use of a more diverse database, such as ImageNet, could also provide additional robustness to the system. Though the current datasets were useful, ImageNet's greater diversity could enhance the system's adaptability to various image inpainting scenarios. Lastly, using devices with higher computational capabilities could accelerate training times and allow for the exploration of more complex models, possibly leading to better results. As the field evolves, more potent resources will play an increasingly significant role. In summary, these future directions can push the envelope in the field of degraded colour images inpainting, taking it closer to the cutting edge.
