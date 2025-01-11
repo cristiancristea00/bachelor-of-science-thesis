@@ -22,7 +22,7 @@ clean:
 # Sorts and tidies the BibTeX entries. Uses: https://github.com/FlamingTempura/bibtex-tidy
 sort:
 	@echo "Sorting and tidying BibTeX entries..."
-	bibtex-tidy --modify --omit=abstract,keywords,month,day,issn,URL --sort=key --curly --numeric --space=4 --no-align --blank-lines --duplicates=key --strip-enclosing-braces --no-escape --sort-fields --strip-comments --trailing-commas --no-tidy-comments --remove-empty-fields --generate-keys --enclosing-braces=title,journal,booktitle references.bib
+	bibtex-tidy --modify --omit=abstract,keywords,month,day,issn,URL --sort=key --curly --numeric --space=4 --no-align --blank-lines --duplicates=key --strip-enclosing-braces --no-escape --sort-fields --strip-comments --trailing-commas --no-tidy-comments --remove-empty-fields --enclosing-braces=title,journal,booktitle references.bib
 	@echo "Sorting and tidying finished"
 
 .PHONY: all clean
