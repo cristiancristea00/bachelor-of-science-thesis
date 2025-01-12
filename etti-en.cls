@@ -40,8 +40,8 @@
     right=2cm,
     headheight=15pt,
     headsep=10pt,
-    top=2.5cm,
-    bottom=2.5cm,
+    top=2cm,
+    bottom=2cm,
 ]{geometry}
 \RequirePackage[
     backend=biber,
@@ -56,7 +56,7 @@
 ]{biblatex}
 \RequirePackage[romanian, english]{babel}
 \RequirePackage[labelfont=bf, justification=centering]{caption}
-\RequirePackage[skip=5pt, indent=30pt]{parskip}
+\RequirePackage[skip=3pt, indent=30pt]{parskip}
 \RequirePackage[lined, longend, hangingcomment, algochapter]{algorithm2e}
 \RequirePackage[dvipsnames]{xcolor}
 \RequirePackage[titletoc, title]{appendix}
@@ -233,7 +233,7 @@
 % Custom colour that can be used in the document when writing at night
 \definecolor{seashell}{RGB}{255, 241, 231}
 
-% Format the URL date in the bibliography to be displayed as "(Accessed <date>)"
+% Format the URL date in the bibliography to be displayed as "(Accessed on <date>)"
 \DeclareFieldFormat{urldate}{(Accessed on #1)}
 
 % Reduce the top margin by 2.5pt to balance the page header
@@ -304,7 +304,7 @@
                 \ifisdissertation
                 \textbf{for the degree of} \textit{Master of Science}\\
                 \else
-                \textbf{for the degree of} \textit{Engineer}\\
+                \textbf{for the degree of} \textit{Bachelor of Science}\\
                 \fi
                 \textbf{in the domain of} \textit{\@domain}\\
                 \textbf{\ifisdissertation master\else bachelor\fi\ study programme} \textit{\@programme}\\
@@ -338,7 +338,7 @@
         \large\textbf{Statement of Academic Honesty}\\[15mm]
     \end{center}
 
-    I hereby declare that the thesis titled \textit{\@covertitle}, submitted to the Faculty of Electronics, Telecommunications and Information Technology, National University of Science and Technology POLITEHNICA Bucharest, in partial fulfilment of the requirements for the degree of \ifisdissertation\textit{Master of Science}\else \textit{Engineer}\fi\ in the domain of \textit{\@domain}, \ifisdissertation master\else bachelor\fi\ study programme \textit{\@programme}, is written by myself and was never before submitted to any faculty or any higher learning institution in Romania or any other country.
+    I hereby declare that the thesis titled \textit{\@covertitle}, submitted to the Faculty of Electronics, Telecommunications and Information Technology, National University of Science and Technology POLITEHNICA Bucharest, in partial fulfilment of the requirements for the degree of \ifisdissertation\textit{Master of Science}\else \textit{Bachelor of Science}\fi\ in the domain of \textit{\@domain}, \ifisdissertation master\else bachelor\fi\ study programme \textit{\@programme}, is written by myself and was never before submitted to any faculty or any higher learning institution in Romania or any other country.
 
     I declare that all information sources I used, including the ones I found on the Internet, are properly cited in the thesis as bibliographical references. Text fragments cited \enquote{as is} or translated from other languages are written between quotes and are referenced to the source. Reformulation using different words from certain texts is also properly referenced. I understand that plagiarism constitutes an offence punishable by law.
 
@@ -349,7 +349,7 @@
 
     \@student\\[0.5em]
 
-    % \includegraphics{signature.png}\\[-2.5em]
+    \includegraphics{signature.png}\\[-2.5em]
 
     .........................
     \vfil
